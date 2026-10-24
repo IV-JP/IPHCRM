@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Asset CRM | Comprehensive Platform</title>
+    <title>IPH CRM INDIVILLAGE | Enterprise Asset Platform</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -22,41 +21,66 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    fontFamily: { sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'] },
                     colors: { primary: '#6366f1', secondary: '#14b8a6', dark: '#0f172a', dark_card: '#1e293b' }
                 }
             }
         };
     </script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        /* iOS Glassmorphic Theme Overrides */
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+            background-color: #000000; 
+            color: #f8fafc; 
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.2), transparent 30%),
+                radial-gradient(circle at 85% 30%, rgba(20, 184, 166, 0.2), transparent 30%),
+                radial-gradient(circle at 50% 100%, rgba(225, 29, 72, 0.15), transparent 40%);
+            background-attachment: fixed;
+        }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
         
-        .nav-item.active { background-color: rgba(99, 102, 241, 0.15); color: #818cf8; border-right: 3px solid #818cf8; }
-        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .nav-item.active { 
+            background-color: rgba(255, 255, 255, 0.15); 
+            color: #ffffff; 
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .glass-panel { 
+            background: rgba(30, 30, 40, 0.45) !important; 
+            backdrop-filter: saturate(180%) blur(24px) !important; 
+            -webkit-backdrop-filter: saturate(180%) blur(24px) !important; 
+            border: 1px solid rgba(255, 255, 255, 0.12) !important; 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        /* Force transparent backgrounds on layout wrappers to let glassmorphism shine */
+        #loginScreen, #appContainer, main, aside, .view-section, .bg-\[\#0b1120\] {
+            background: transparent !important;
+        }
+        
+        /* Smooth frosted inputs and tables */
+        input, select, .bg-slate-900, .bg-slate-800, .bg-slate-800\/80, thead {
+            background: rgba(20, 20, 30, 0.4) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
         
         /* Drag and Drop Zone Styles */
-        .drop-zone { border: 2px dashed #475569; transition: all 0.3s ease; }
-        .drop-zone.dragover { border-color: #6366f1; background-color: rgba(99, 102, 241, 0.1); }
+        .drop-zone { border: 2px dashed rgba(255,255,255,0.2); transition: all 0.3s ease; }
+        .drop-zone.dragover { border-color: #6366f1; background-color: rgba(99, 102, 241, 0.2); }
     </style>
 </head>
 <body class="h-screen w-full overflow-hidden flex flex-col md:flex-row antialiased">
-
-    <!-- NOTIFICATION TOAST -->
-    <div id="toast" class="fixed top-5 right-5 z-[100] transform translate-x-full transition-transform duration-300 bg-slate-800 border-l-4 border-primary text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 min-w-[300px]">
-        <i id="toastIcon" class="fas fa-info-circle text-xl"></i>
-        <div>
-            <h4 id="toastTitle" class="font-bold text-sm">Notification</h4>
-            <p id="toastMsg" class="text-xs text-slate-300 mt-0.5">System message</p>
-        </div>
-    </div>
-
     <!-- 1. LOGIN SCREEN -->
-    <div id="loginScreen" class="fixed inset-0 z-50 bg-[#0b1120] flex flex-col items-center justify-center p-4">
-        <div class="glass-panel p-10 rounded-2xl w-full max-w-md shadow-2xl border border-slate-700 relative overflow-hidden">
+    <div id="loginScreen" class="fixed inset-0 z-50 flex flex-col items-center justify-center p-4">
+        <div class="glass-panel p-10 rounded-3xl w-full max-w-md relative overflow-hidden">
             <!-- Decorative blur -->
             <div class="absolute top-0 left-0 w-full h-32 bg-primary/20 blur-[50px] -z-10 rounded-full transform -translate-y-1/2"></div>
             
@@ -64,7 +88,7 @@
                 <div class="w-16 h-16 bg-gradient-to-br from-primary to-indigo-700 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-lg shadow-primary/30">
                     <i class="fas fa-satellite-dish"></i>
                 </div>
-                <h1 class="text-3xl font-bold text-white tracking-tight">Comprehensive CRM</h1>
+                <h1 class="text-3xl font-bold text-white tracking-tight">IPH CRM INDIVILLAGE</h1>
                 <p class="text-slate-400 text-sm mt-2">Mobile Device Asset Inventory</p>
             </div>
             
@@ -99,13 +123,13 @@
     <div id="appContainer" class="flex h-full w-full hidden">
         
         <!-- SIDEBAR -->
-        <aside class="w-64 glass-panel border-r border-slate-800 flex flex-col hidden md:flex h-full flex-shrink-0 z-20 bg-[#0f172a]/90">
+        <aside class="w-64 glass-panel border-r border-slate-800 flex flex-col hidden md:flex h-full flex-shrink-0 z-20">
             <div class="p-6 border-b border-slate-800 flex items-center gap-3">
                 <div class="w-10 h-10 bg-gradient-to-br from-primary to-indigo-700 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/30">
                     <i class="fas fa-satellite-dish"></i>
                 </div>
                 <div>
-                    <h2 class="font-bold text-white tracking-tight">Comp CRM</h2>
+                    <h2 class="font-bold text-white tracking-tight">IPH CRM</h2>
                     <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold" id="sidebarRoleLabel">Admin</p>
                 </div>
             </div>
@@ -143,13 +167,13 @@
         </aside>
 
         <!-- MAIN CONTENT AREA -->
-        <main class="flex-1 flex flex-col h-full bg-[#0b1120] overflow-hidden relative">
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative">
             
             <!-- Mobile Header -->
             <header class="md:hidden glass-panel p-4 flex items-center justify-between border-b border-slate-800 z-20">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-satellite-dish text-primary"></i>
-                    <span class="font-bold text-white">Comp CRM</span>
+                    <span class="font-bold text-white">IPH CRM</span>
                 </div>
                 <button onclick="toggleMobileMenu()" class="text-slate-300 p-2 focus:outline-none">
                     <i class="fas fa-bars text-xl"></i>
@@ -285,6 +309,7 @@
                                         <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">IMEI</th>
                                         <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Color</th>
                                         <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Status</th>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Last Edited</th>
                                         <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest text-right">Actions</th>
                                     </tr>
                                 </thead>
@@ -534,6 +559,22 @@
         </div>
     </div>
 
+    <!-- GLOBAL LOADER -->
+    <div id="globalLoader" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md hidden flex-col items-center justify-center">
+        <div class="w-16 h-16 border-4 border-slate-700 border-t-primary rounded-full animate-spin mb-4"></div>
+        <h2 class="text-white font-bold text-xl tracking-wider">Syncing Data...</h2>
+        <p class="text-slate-400 text-sm mt-2">Please do not close this window.</p>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="fixed top-5 right-5 z-[100] transform translate-x-full transition-transform duration-300 px-5 py-4 rounded-xl shadow-2xl flex items-center gap-4 min-w-[300px] border-l-4 bg-slate-800 border-primary">
+        <i id="toastIcon" class="fas fa-info-circle text-2xl text-primary"></i>
+        <div>
+            <h4 id="toastTitle" class="font-bold text-sm text-white">Notification</h4>
+            <p id="toastMsg" class="text-xs text-slate-300">Message</p>
+        </div>
+    </div>
+
     <!-- ========================================== -->
     <!-- CORE JAVASCRIPT LOGIC                      -->
     <!-- ========================================== -->
@@ -645,6 +686,32 @@
                         password: c.Password,
                         role: c.Role
                     }));
+
+                    // Automatically seed all 25 centers if they are missing
+                    const defaultCenters = [
+                        {code: 'YGR', name: 'Yemmiganur'}, {code: 'KYM', name: 'Kymore'}, {code: 'RCR', name: 'Raichur'},
+                        {code: 'ATP', name: 'Anantapur'}, {code: 'BGK', name: 'Bagalkot'}, {code: 'VNS', name: 'Varanasi'},
+                        {code: 'BSI', name: 'Bassi'}, {code: 'NLR', name: 'Nellor'}, {code: 'ADN', name: 'Adoni'},
+                        {code: 'MYS', name: 'Mysore'}, {code: 'KNL', name: 'Kurnool'}, {code: 'KOL', name: 'Kolkatha'},
+                        {code: 'KTN', name: 'Katni'}, {code: 'HBL', name: 'Hubli'}, {code: 'JBP', name: 'Jabalpur'},
+                        {code: 'BGV', name: 'Balgavi'}, {code: 'KRD', name: 'Kiridi'}, {code: 'DGR', name: 'Devghar'},
+                        {code: 'JPR', name: 'Jaipur'}, {code: 'UDP', name: 'Udypur'}, {code: 'JDP', name: 'Jodhpur'},
+                        {code: 'LKW', name: 'Lucknow'}, {code: 'BWR', name: 'Bhuwaneshwar'}, {code: 'NGR', name: 'Nagpoor'},
+                        {code: 'CBR', name: 'Coimbatore'}
+                    ];
+                    
+                    let added = false;
+                    defaultCenters.forEach(dc => {
+                        if(!centersData.find(c => c.code === dc.code)) {
+                            centersData.push({ code: dc.code, name: dc.name, password: dc.code + '123', role: 'center' });
+                            added = true;
+                        }
+                    });
+
+                    if (added) {
+                        pushCentersToGAS(); // Auto-sync newly seeded centers to Google Sheets
+                    }
+
                     populateCenterDropdowns();
                     if (currentUser && currentUser.role === 'admin' && document.getElementById('view-centers').classList.contains('flex')) {
                         renderCentersTable();
@@ -760,16 +827,16 @@
             const pro = data.filter(d => d.modelName && d.modelName.toLowerCase().includes('pro')).length;
             const nonPro = total - pro; // Approximate
             
-            // Update DOM Elements
-            animateValue("kpi-total", 0, total, 1000);
-            animateValue("kpi-active", 0, active, 1000);
-            animateValue("kpi-faulty", 0, faulty, 1000);
-            animateValue("kpi-pro", 0, pro, 1000);
-            animateValue("kpi-nonpro", 0, nonPro, 1000);
+            // Update DOM Elements directly (No animation)
+            document.getElementById("kpi-total").innerHTML = total;
+            document.getElementById("kpi-active").innerHTML = active;
+            document.getElementById("kpi-faulty").innerHTML = faulty;
+            document.getElementById("kpi-pro").innerHTML = pro;
+            document.getElementById("kpi-nonpro").innerHTML = nonPro;
 
             // Chart Colors
             Chart.defaults.color = '#94a3b8';
-            Chart.defaults.font.family = 'Inter';
+            Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, Inter';
 
             // 1. Center Chart
             const ctxCenter = document.getElementById('centerChart').getContext('2d');
@@ -796,7 +863,7 @@
                     datasets: [{
                         label: 'Devices',
                         data: centerData,
-                        backgroundColor: '#6366f1',
+                        backgroundColor: '#e11d48',
                         borderRadius: 6,
                         barPercentage: 0.6
                     }]
@@ -828,7 +895,7 @@
                     labels: topLabels,
                     datasets: [{
                         data: topData,
-                        backgroundColor: ['#6366f1', '#14b8a6', '#f43f5e', '#8b5cf6', '#eab308'],
+                        backgroundColor: ['#e11d48', '#f43f5e', '#fb7185', '#fda4af', '#ffe4e6'],
                         borderWidth: 0, hoverOffset: 5
                     }]
                 },
@@ -840,22 +907,6 @@
             });
         }
         
-        // Count animation utility
-        function animateValue(id, start, end, duration) {
-            if (start === end) { document.getElementById(id).innerHTML = end; return; }
-            let range = end - start;
-            let current = start;
-            let increment = end > start ? 1 : -1;
-            let stepTime = Math.abs(Math.floor(duration / range));
-            if(stepTime < 10) stepTime = 10;
-            let obj = document.getElementById(id);
-            let timer = setInterval(function() {
-                current += increment;
-                obj.innerHTML = current;
-                if (current == end) clearInterval(timer);
-            }, stepTime);
-        }
-
         // --- 7. Inventory CRUD Module ---
         function renderTable() {
             let data = getFilteredData();
@@ -911,6 +962,12 @@
                         <td class="py-3 px-5 text-xs text-slate-400">${d.color || '-'}</td>
                         <td class="py-3 px-5">
                             <span class="text-[10px] px-2.5 py-1 rounded border font-bold uppercase tracking-wider ${statusClass}">${d.status || 'UNKNOWN'}</span>
+                        </td>
+                        <td class="py-3 px-5">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-semibold text-slate-300">${d.lastEditedBy || '-'}</span>
+                                <span class="text-[9px] text-slate-500">${d.lastEditedTime || '-'}</span>
+                            </div>
                         </td>
                         <td class="py-3 px-5 text-right opacity-50 group-hover:opacity-100 transition-opacity">
                             <button onclick="editDevice(${d.id})" class="w-8 h-8 rounded hover:bg-indigo-500/20 text-slate-400 hover:text-indigo-400 transition-colors"><i class="fas fa-pen"></i></button>
@@ -983,6 +1040,9 @@
             e.preventDefault();
             const id = document.getElementById('deviceId').value;
             
+            const timestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
+            const editor = currentUser ? (currentUser.role === 'admin' ? 'Admin (' + currentUser.code + ')' : currentUser.name + ' (' + currentUser.code + ')') : 'System';
+
             const newDevice = {
                 id: id ? parseInt(id) : Date.now(),
                 sNo: document.getElementById('sNo').value,
@@ -994,7 +1054,9 @@
                 imei: document.getElementById('imei').value.trim(),
                 status: document.getElementById('status').value,
                 storage: document.getElementById('storage').value.trim(),
-                color: document.getElementById('color').value.trim()
+                color: document.getElementById('color').value.trim(),
+                lastEditedBy: editor,
+                lastEditedTime: timestamp
             };
 
             if (id) {
@@ -1148,6 +1210,8 @@
 
         async function pullFromGAS() {
             logSync('Initiating POST request to Apps Script backend (fetch action)...');
+            document.getElementById('globalLoader').classList.remove('hidden');
+            document.getElementById('globalLoader').classList.add('flex');
             try {
                 const response = await fetch(GAS_URL, {
                     method: 'POST',
@@ -1168,7 +1232,9 @@
                         imei: row['IMEI 1'] || row['IMEI'] || row['imei'] || '',
                         status: row['Device Status'] || row['Status'] || row['status'] || 'Active',
                         storage: row['Storage'] || '',
-                        color: row['Mobile Color'] || row['color'] || ''
+                        color: row['Mobile Color'] || row['color'] || '',
+                        lastEditedBy: row['Last Edited By'] || row['lastEditedBy'] || '',
+                        lastEditedTime: row['Last Edited Time'] || row['lastEditedTime'] || ''
                     }));
                     saveToLocal();
                     if (document.getElementById('view-inventory').classList.contains('flex')) {
@@ -1185,16 +1251,23 @@
             } catch (err) {
                 logSync(`HTTP Error: ${err.message}`);
                 showToast('Sync Failed', 'Could not fetch data. Check console logs.', 'error');
+            } finally {
+                document.getElementById('globalLoader').classList.add('hidden');
+                document.getElementById('globalLoader').classList.remove('flex');
             }
         }
 
         async function pushToGAS() {
             logSync('Formatting dataset for payload transmission...');
+            document.getElementById('globalLoader').classList.remove('hidden');
+            document.getElementById('globalLoader').classList.add('flex');
             const exportData = inventoryData.map(d => ({
                 'S No': d.sNo, 'Tag ID': d.tagId, 'Location': d.location, 
                 'Project Name': d.projectName, 'Model Name': d.modelName, 
                 'Supplier': d.supplier, 'IMEI 1': d.imei, 'Storage': d.storage, 
-                'Mobile Color': d.color, 'Device Status': d.status
+                'Mobile Color': d.color, 'Device Status': d.status,
+                'Last Edited By': d.lastEditedBy || '',
+                'Last Edited Time': d.lastEditedTime || ''
             }));
 
             try {
@@ -1215,6 +1288,9 @@
             } catch (err) {
                 logSync(`Transmission Error: ${err.message}`);
                 showToast('Sync Failed', 'Failed to push data.', 'error');
+            } finally {
+                document.getElementById('globalLoader').classList.add('hidden');
+                document.getElementById('globalLoader').classList.remove('flex');
             }
         }
 
@@ -1307,7 +1383,9 @@
                 'IMEI 1': d.imei,
                 'Storage': d.storage,
                 'Mobile Color': d.color,
-                'Device Status': d.status
+                'Device Status': d.status,
+                'Last Edited By': d.lastEditedBy || '',
+                'Last Edited Time': d.lastEditedTime || ''
             }));
 
             // Create Workbook
