@@ -7,10 +7,15 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
+    <!-- Chart.js & Datalabels -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <!-- SheetJS for Excel Import/Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- HTML2PDF for Dashboard Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- QRCode.js for Asset Labels -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
@@ -59,7 +64,7 @@
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
         }
         
-        /* Force transparent backgrounds on layout wrappers to let glassmorphism shine */
+        /* Force transparent backgrounds on layout wrappers */
         #loginScreen, #appContainer, main, aside, .view-section, .bg-\[\#0b1120\] {
             background: transparent !important;
         }
@@ -148,6 +153,9 @@
                 <button onclick="switchView('centers')" id="nav-centers" class="nav-item hidden w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800 transition-all text-left">
                     <i class="fas fa-building w-5 text-center"></i> Center Management
                 </button>
+                <button onclick="switchView('center-stats')" id="nav-center-stats" class="nav-item hidden w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800 transition-all text-left">
+                    <i class="fas fa-chart-bar w-5 text-center"></i> Center Analytics
+                </button>
             </nav>
             
             <div class="p-4 border-t border-slate-800">
@@ -190,14 +198,19 @@
                             <h1 class="text-3xl font-bold text-white tracking-tight">Analytics Dashboard</h1>
                             <p class="text-slate-400 text-sm mt-1" id="dashboardSubtitle">Real-time overview of IT asset infrastructure</p>
                         </div>
-                        <div class="bg-slate-800/80 px-4 py-2 rounded-lg text-sm font-medium border border-slate-700 flex items-center gap-2 text-slate-300">
-                            <i class="fas fa-clock text-primary"></i> Last synced: <span id="lastSyncTime">Just now</span>
+                        <div class="flex gap-3">
+                            <button onclick="exportDashboardPDF()" class="bg-slate-800/80 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm font-medium border border-slate-700 flex items-center gap-2 text-white transition-colors shadow-sm">
+                                <i class="fas fa-file-pdf text-rose-400"></i> Export PDF Report
+                            </button>
+                            <div class="bg-slate-800/80 px-4 py-2 rounded-lg text-sm font-medium border border-slate-700 flex items-center gap-2 text-slate-300">
+                                <i class="fas fa-clock text-primary"></i> Last synced: <span id="lastSyncTime">Just now</span>
+                            </div>
                         </div>
                     </div>
                     
                     <!-- KPI Cards Row 1 -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-                        <div class="glass-panel p-5 rounded-2xl border border-slate-700 relative overflow-hidden group hover:border-primary/50 transition-colors">
+                        <div onclick="jumpToInventory('', '', '')" class="glass-panel p-5 rounded-2xl border border-slate-700 relative overflow-hidden group hover:border-primary/50 transition-colors cursor-pointer">
                             <div class="absolute -right-4 -top-4 w-16 h-16 bg-blue-500/10 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
                             <div class="flex justify-between items-start relative z-10">
                                 <div>
@@ -207,7 +220,7 @@
                                 <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center"><i class="fas fa-server"></i></div>
                             </div>
                         </div>
-                        <div class="glass-panel p-5 rounded-2xl border border-slate-700 relative overflow-hidden group hover:border-emerald-500/50 transition-colors">
+                        <div onclick="jumpToInventory('Active', '', '')" class="glass-panel p-5 rounded-2xl border border-slate-700 relative overflow-hidden group hover:border-emerald-500/50 transition-colors cursor-pointer">
                             <div class="absolute -right-4 -top-4 w-16 h-16 bg-emerald-500/10 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
                             <div class="flex justify-between items-start relative z-10">
                                 <div>
@@ -217,7 +230,7 @@
                                 <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center"><i class="fas fa-check-circle"></i></div>
                             </div>
                         </div>
-                        <div class="glass-panel p-5 rounded-2xl border border-slate-700 relative overflow-hidden group hover:border-rose-500/50 transition-colors">
+                        <div onclick="jumpToInventory('Faulty', '', '')" class="glass-panel p-5 rounded-2xl border border-slate-700 relative overflow-hidden group hover:border-rose-500/50 transition-colors cursor-pointer">
                             <div class="absolute -right-4 -top-4 w-16 h-16 bg-rose-500/10 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
                             <div class="flex justify-between items-start relative z-10">
                                 <div>
@@ -227,7 +240,7 @@
                                 <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center"><i class="fas fa-tools"></i></div>
                             </div>
                         </div>
-                        <div class="glass-panel p-5 rounded-2xl border border-slate-700 relative overflow-hidden group hover:border-purple-500/50 transition-colors">
+                        <div onclick="jumpToInventory('', '', 'Pro')" class="glass-panel p-5 rounded-2xl border border-slate-700 relative overflow-hidden group hover:border-purple-500/50 transition-colors cursor-pointer">
                             <div class="flex justify-between items-start relative z-10">
                                 <div>
                                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pro Models</p>
@@ -236,7 +249,7 @@
                                 <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center"><i class="fas fa-star"></i></div>
                             </div>
                         </div>
-                        <div class="glass-panel p-5 rounded-2xl border border-slate-700 relative overflow-hidden group hover:border-slate-400/50 transition-colors">
+                        <div onclick="jumpToInventory('', '', 'non-pro')" class="glass-panel p-5 rounded-2xl border border-slate-700 relative overflow-hidden group hover:border-slate-400/50 transition-colors cursor-pointer">
                             <div class="flex justify-between items-start relative z-10">
                                 <div>
                                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Non-Pro Models</p>
@@ -271,9 +284,19 @@
                             <h1 class="text-3xl font-bold text-white tracking-tight">Master Inventory</h1>
                             <p class="text-slate-400 text-sm mt-1">Search, modify, and track all mobile assets.</p>
                         </div>
-                        <button onclick="openDeviceModal()" class="bg-gradient-to-r from-primary to-indigo-600 hover:from-indigo-500 hover:to-primary text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-primary/30 flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95">
-                            <i class="fas fa-plus"></i> Add New Device
-                        </button>
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <!-- Bulk Actions Container -->
+                            <div id="bulkActions" class="hidden items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700 shadow-md">
+                                <span class="text-xs font-bold text-slate-400 mr-2"><span id="selectedCount">0</span> selected:</span>
+                                <button onclick="bulkUpdateStatus('Active')" class="text-xs font-bold bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white px-3 py-1.5 rounded-lg transition-colors">Set Active</button>
+                                <button onclick="bulkUpdateStatus('Faulty')" class="text-xs font-bold bg-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white px-3 py-1.5 rounded-lg transition-colors">Set Faulty</button>
+                                <button onclick="bulkDelete()" class="text-xs font-bold bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white px-3 py-1.5 rounded-lg transition-colors"><i class="fas fa-trash"></i> Delete</button>
+                            </div>
+
+                            <button onclick="openDeviceModal()" class="bg-gradient-to-r from-primary to-indigo-600 hover:from-indigo-500 hover:to-primary text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-primary/30 flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95">
+                                <i class="fas fa-plus"></i> Add New Device
+                            </button>
+                        </div>
                     </div>
 
                     <div class="glass-panel rounded-2xl border border-slate-700 overflow-hidden flex flex-col flex-1 shadow-2xl">
@@ -301,15 +324,17 @@
                             <table class="w-full text-left text-sm whitespace-nowrap">
                                 <thead class="bg-slate-900 text-slate-400 sticky top-0 z-10 shadow-md">
                                     <tr>
+                                        <!-- Bulk Checkbox Header -->
+                                        <th class="py-4 px-4 w-10 text-center">
+                                            <input type="checkbox" id="selectAllCheckbox" onchange="toggleAllCheckboxes()" class="w-4 h-4 rounded border-slate-600 bg-slate-800 cursor-pointer accent-primary">
+                                        </th>
                                         <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest cursor-pointer hover:text-white" onclick="sortTable('sNo')">S No <i class="fas fa-sort ml-1 opacity-50"></i></th>
                                         <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Tag ID</th>
                                         <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Center</th>
                                         <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Model Name</th>
                                         <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Project</th>
                                         <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">IMEI</th>
-                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Color</th>
                                         <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Status</th>
-                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Last Edited</th>
                                         <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest text-right">Actions</th>
                                     </tr>
                                 </thead>
@@ -331,7 +356,7 @@
                         <!-- Footer -->
                         <div class="p-3 border-t border-slate-700 bg-slate-900 text-xs font-semibold text-slate-400 flex justify-between items-center">
                             <span id="recordCountDisplay" class="bg-slate-800 px-3 py-1 rounded-full">Showing 0 records</span>
-                            <span class="text-[10px] uppercase tracking-widest flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> Local Database Connected</span>
+                            <span class="text-[10px] uppercase tracking-widest flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-emerald-500"></div> Connected</span>
                         </div>
                     </div>
                 </div>
@@ -367,6 +392,35 @@
                     </div>
                 </div>
 
+                <!-- 2.6 CENTER ANALYTICS VIEW (ADMIN ONLY) -->
+                <div id="view-center-stats" class="view-section hidden flex-col h-full min-h-[calc(100vh-6rem)]">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                        <div>
+                            <h1 class="text-3xl font-bold text-white tracking-tight">Center Analytics (Admin)</h1>
+                            <p class="text-slate-400 text-sm mt-1">Live active, faulty, and total device counts across all regional centers.</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl border border-slate-700 overflow-hidden flex flex-col flex-1 shadow-2xl">
+                        <div class="flex-1 overflow-auto bg-[#0b1120]/50 relative">
+                            <table class="w-full text-left text-sm whitespace-nowrap">
+                                <thead class="bg-slate-900 text-slate-400 sticky top-0 z-10 shadow-md">
+                                    <tr>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Center Code</th>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Center Name</th>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest text-blue-400">Total Devices</th>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest text-emerald-400">Active Count</th>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest text-rose-400">Damage/Faulty Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="centerStatsTableBody" class="divide-y divide-slate-800/60">
+                                    <!-- Rows rendered via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 3. INTEGRATION HUB VIEW -->
                 <div id="view-integrations" class="view-section hidden">
                     <h1 class="text-3xl font-bold text-white tracking-tight mb-1">Integration Hub</h1>
@@ -374,32 +428,7 @@
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         
-                        <!-- Panel A: Excel File Operations -->
-                        <div class="glass-panel p-8 rounded-2xl border border-slate-700 shadow-xl flex flex-col">
-                            <div class="flex items-center gap-3 mb-6">
-                                <div class="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-xl flex items-center justify-center text-xl">
-                                    <i class="fas fa-file-excel"></i>
-                                </div>
-                                <div>
-                                    <h2 class="text-xl font-bold text-white">Excel Import / Export</h2>
-                                    <p class="text-xs text-slate-400 mt-1">Operates locally via SheetJS in browser</p>
-                                </div>
-                            </div>
-                            
-                            <!-- Drag & Drop Zone -->
-                            <div id="dropZone" class="drop-zone flex-1 rounded-xl flex flex-col items-center justify-center p-8 mb-6 cursor-pointer bg-slate-900/50 hover:bg-slate-800/50">
-                                <i class="fas fa-cloud-upload-alt text-4xl text-slate-500 mb-4"></i>
-                                <p class="text-white font-medium text-center">Drag & Drop <br><span class="text-primary">'All-In-One_Mobile Device_Inventory_2.xlsx'</span></p>
-                                <p class="text-xs text-slate-400 mt-2 text-center">or click to browse local files</p>
-                                <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv">
-                            </div>
-                            
-                            <button onclick="exportToExcel()" class="w-full bg-slate-800 hover:bg-emerald-600 text-white font-bold py-3.5 rounded-xl border border-slate-700 transition-all flex items-center justify-center gap-2">
-                                <i class="fas fa-download"></i> Download Export as .xlsx
-                            </button>
-                        </div>
-
-                        <!-- Panel B: Google Apps Script API -->
+                        <!-- Panel A: Google Apps Script API -->
                         <div class="glass-panel p-8 rounded-2xl border border-slate-700 shadow-xl flex flex-col">
                             <div class="flex items-center gap-3 mb-6">
                                 <div class="w-12 h-12 bg-blue-500/20 text-blue-400 rounded-xl flex items-center justify-center text-xl">
@@ -437,10 +466,52 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Panel B: Excel File Operations -->
+                        <div class="glass-panel p-8 rounded-2xl border border-slate-700 shadow-xl flex flex-col">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-xl flex items-center justify-center text-xl">
+                                    <i class="fas fa-file-excel"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-bold text-white">Excel Import / Export</h2>
+                                    <p class="text-xs text-slate-400 mt-1">Operates locally via SheetJS in browser</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Drag & Drop Zone -->
+                            <div id="dropZone" class="drop-zone flex-1 rounded-xl flex flex-col items-center justify-center p-8 mb-6 cursor-pointer bg-slate-900/50 hover:bg-slate-800/50">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-slate-500 mb-4"></i>
+                                <p class="text-white font-medium text-center">Drag & Drop <br><span class="text-primary">'All-In-One_Mobile Device_Inventory_2.xlsx'</span></p>
+                                <p class="text-xs text-slate-400 mt-2 text-center">or click to browse local files</p>
+                                <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv">
+                            </div>
+                            
+                            <button onclick="exportToExcel()" class="w-full bg-slate-800 hover:bg-emerald-600 text-white font-bold py-3.5 rounded-xl border border-slate-700 transition-all flex items-center justify-center gap-2">
+                                <i class="fas fa-download"></i> Download Export as .xlsx
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- QR CODE GENERATOR MODAL -->
+    <div id="qrModal" class="fixed inset-0 z-[70] bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-[#1e293b] border border-slate-700 w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center transform scale-95 transition-transform duration-200" id="qrModalContent">
+            <h3 class="text-xl font-bold text-white mb-2"><i class="fas fa-qrcode text-primary"></i> Asset QR Code</h3>
+            <p class="text-sm text-slate-400 mb-6" id="qrSubtitle">IV-YGR-IPH-001</p>
+            
+            <div class="bg-white p-4 rounded-xl inline-block mb-6 shadow-inner mx-auto" id="qrcodeContainer"></div>
+            
+            <div class="flex justify-center gap-3">
+                <button onclick="closeQRModal()" class="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-700 transition-colors border border-slate-600">Close</button>
+                <button onclick="printQR()" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-primary hover:bg-indigo-500 text-white shadow-lg transition-all flex items-center gap-2">
+                    <i class="fas fa-print"></i> Print Label
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- ADD/EDIT DEVICE MODAL -->
@@ -596,7 +667,6 @@
             setupDropZone();
         });
 
-        // Initialize empty initially, populated by GAS sync
         function loadInitialData() {
             const savedData = localStorage.getItem('crm_inventory_data');
             if (savedData) {
@@ -624,7 +694,6 @@
                 currentUser = JSON.parse(session);
                 loadInitialData();
                 showApp();
-                // Background sync on reload
                 pullCentersFromGAS();
                 pullFromGAS();
             }
@@ -649,13 +718,12 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    currentUser = result.data; // e.g. { role: 'admin', code: 'ALL', name: 'Global Admin' }
+                    currentUser = result.data; 
                     sessionStorage.setItem('crm_user_session', JSON.stringify(currentUser));
                     document.getElementById('loginForm').reset();
                     showApp();
                     showToast('Access Granted', `Welcome back, ${currentUser.name}`, 'success');
                     
-                    // Automatically sync data upon successful login
                     await pullCentersFromGAS();
                     await pullFromGAS();
                 } else {
@@ -687,7 +755,6 @@
                         role: c.Role
                     }));
 
-                    // Automatically seed all 25 centers if they are missing
                     const defaultCenters = [
                         {code: 'YGR', name: 'Yemmiganur'}, {code: 'KYM', name: 'Kymore'}, {code: 'RCR', name: 'Raichur'},
                         {code: 'ATP', name: 'Anantapur'}, {code: 'BGK', name: 'Bagalkot'}, {code: 'VNS', name: 'Varanasi'},
@@ -709,7 +776,7 @@
                     });
 
                     if (added) {
-                        pushCentersToGAS(); // Auto-sync newly seeded centers to Google Sheets
+                        pushCentersToGAS(); 
                     }
 
                     populateCenterDropdowns();
@@ -751,25 +818,29 @@
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('appContainer').classList.remove('hidden');
             
-            // Adjust UI for Role
             document.getElementById('sidebarRoleLabel').innerText = currentUser.role === 'admin' ? 'Super Admin' : 'Center Manager';
             document.getElementById('currentUserDisplay').innerText = currentUser.role === 'admin' ? 'System Admin' : `Manager - ${currentUser.code}`;
             document.getElementById('currentLocationDisplay').innerText = currentUser.role === 'admin' ? 'Global Organization' : `${currentUser.code} Center Operations`;
             
             const filterCenter = document.getElementById('filterCenter');
             const navCenters = document.getElementById('nav-centers');
+            const navCenterStats = document.getElementById('nav-center-stats');
             if (currentUser.role === 'admin') {
                 filterCenter.classList.remove('hidden');
                 navCenters.classList.remove('hidden');
                 navCenters.classList.add('flex');
+                navCenterStats.classList.remove('hidden');
+                navCenterStats.classList.add('flex');
                 document.getElementById('location').disabled = false;
                 document.getElementById('dashboardSubtitle').innerText = "Real-time overview of IT asset infrastructure across all locations";
             } else {
                 filterCenter.classList.add('hidden');
                 navCenters.classList.add('hidden');
                 navCenters.classList.remove('flex');
+                navCenterStats.classList.add('hidden');
+                navCenterStats.classList.remove('flex');
                 document.getElementById('location').value = currentUser.code;
-                document.getElementById('location').disabled = true; // Lock to their center
+                document.getElementById('location').disabled = true;
                 document.getElementById('dashboardSubtitle').innerText = `Real-time overview of IT assets at ${currentUser.code}`;
             }
 
@@ -778,35 +849,39 @@
 
         // --- 4. Navigation ---
         function switchView(viewId) {
-            // Hide all sections
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             
-            // Show requested
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
-            
-            // Due to flex layout on inventory and centers, ensure they display flex
-            if (viewId === 'inventory' || viewId === 'centers') document.getElementById(`view-${viewId}`).classList.add('flex');
+            if (viewId === 'inventory' || viewId === 'centers' || viewId === 'center-stats') document.getElementById(`view-${viewId}`).classList.add('flex');
             
             document.getElementById(`nav-${viewId}`).classList.add('active');
             
             if (viewId === 'dashboard') renderDashboard();
             if (viewId === 'inventory') renderTable();
             if (viewId === 'centers') renderCentersTable();
-            
-            // Close mobile menu if open
-            const menu = document.getElementById('mobileMenu');
-            if(menu && !menu.classList.contains('hidden')) toggleMobileMenu();
+            if (viewId === 'center-stats') renderCenterStats();
         }
 
-        function toggleMobileMenu() {
-            // Simple logic assuming navigation items are in a mobile container (simplified here)
-            alert("Mobile menu expanded functionality would go here.");
+        function jumpToInventory(status = '', center = '', search = '') {
+            const filterStatusEl = document.getElementById('filterStatus');
+            if (filterStatusEl) filterStatusEl.value = status;
+            
+            const filterCenterEl = document.getElementById('filterCenter');
+            if (filterCenterEl && !filterCenterEl.classList.contains('hidden')) {
+                const exists = Array.from(filterCenterEl.options).some(opt => opt.value === center);
+                if (exists) filterCenterEl.value = center;
+                else filterCenterEl.value = '';
+            }
+            
+            const searchEl = document.getElementById('searchInput');
+            if (searchEl) searchEl.value = search;
+            
+            switchView('inventory');
         }
 
         // --- 5. Data Access Helpers ---
         function getFilteredData() {
-            // Secure filter based on role
             return currentUser.role === 'admin' ? [...inventoryData] : inventoryData.filter(d => d.location === currentUser.code);
         }
 
@@ -814,29 +889,25 @@
             localStorage.setItem('crm_inventory_data', JSON.stringify(inventoryData));
         }
 
-        // --- 6. Dashboard Module ---
+        // --- 6. Dashboard & Chart.js ---
         function renderDashboard() {
             const data = getFilteredData();
             
-            // Calculate KPIs
             const total = data.length;
-            const active = data.filter(d => d.status && d.status.toLowerCase() === 'active').length;
-            const faulty = data.filter(d => d.status && (d.status.toLowerCase().includes('faulty') || d.status.toLowerCase().includes('repair'))).length;
+            const active = data.filter(d => (d.status || '').toLowerCase() === 'active').length;
+            const faulty = data.filter(d => { const stat = (d.status || '').toLowerCase(); return stat.includes('faulty') || stat.includes('repair'); }).length;
+            const pro = data.filter(d => (d.modelName || '').toLowerCase().includes('pro')).length;
+            const nonPro = total - pro; 
             
-            // Determine Pro vs Non-Pro (crude check based on Model Name strings)
-            const pro = data.filter(d => d.modelName && d.modelName.toLowerCase().includes('pro')).length;
-            const nonPro = total - pro; // Approximate
-            
-            // Update DOM Elements directly (No animation)
             document.getElementById("kpi-total").innerHTML = total;
             document.getElementById("kpi-active").innerHTML = active;
             document.getElementById("kpi-faulty").innerHTML = faulty;
             document.getElementById("kpi-pro").innerHTML = pro;
             document.getElementById("kpi-nonpro").innerHTML = nonPro;
 
-            // Chart Colors
             Chart.defaults.color = '#94a3b8';
             Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, Inter';
+            if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels);
 
             // 1. Center Chart
             const ctxCenter = document.getElementById('centerChart').getContext('2d');
@@ -870,11 +941,22 @@
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: '#1e293b' } },
-                        x: { grid: { display: false } }
+                    onClick: (event, elements, chart) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const label = chart.data.labels[index];
+                            if (currentUser.role === 'admin') {
+                                jumpToInventory('', label, '');
+                            } else {
+                                jumpToInventory('', '', label);
+                            }
+                        }
                     },
-                    plugins: { legend: { display: false } }
+                    scales: { y: { beginAtZero: true, grid: { color: '#1e293b' } }, x: { grid: { display: false } } },
+                    plugins: { 
+                        legend: { display: false },
+                        datalabels: { anchor: 'end', align: 'top', color: '#f8fafc', font: { weight: 'bold', size: 10 } }
+                    }
                 }
             });
 
@@ -882,7 +964,6 @@
             const ctxModel = document.getElementById('modelChart').getContext('2d');
             if (modelChartInst) modelChartInst.destroy();
             
-            // Group Top 5 models
             const modelCounts = {};
             data.forEach(d => { if(d.modelName) modelCounts[d.modelName] = (modelCounts[d.modelName]||0) + 1; });
             const sortedModels = Object.entries(modelCounts).sort((a,b) => b[1]-a[1]);
@@ -900,32 +981,73 @@
                     }]
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
-                    cutout: '75%',
-                    plugins: { legend: { position: 'right' } }
+                    responsive: true, maintainAspectRatio: false, cutout: '75%',
+                    onClick: (event, elements, chart) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const label = chart.data.labels[index];
+                            jumpToInventory('', '', label);
+                        }
+                    },
+                    plugins: { 
+                        legend: { position: 'right' },
+                        datalabels: { color: '#ffffff', font: { weight: 'bold', size: 12 }, formatter: (value) => { return value > 0 ? value : ''; } }
+                    }
                 }
             });
         }
         
-        // --- 7. Inventory CRUD Module ---
+        // --- Dashboard PDF Export ---
+        function exportDashboardPDF() {
+            const element = document.getElementById('view-dashboard');
+            const btn = document.querySelector('button[onclick="exportDashboardPDF()"]');
+            if(!btn) return;
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+            
+            const opt = {
+                margin:       10,
+                filename:     `Trace_Mecka_Dashboard_${new Date().toISOString().slice(0,10)}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#000000' },
+                jsPDF:        { unit: 'mm', format: 'a3', orientation: 'landscape' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                btn.innerHTML = originalContent;
+                showToast('Export Complete', 'Dashboard PDF generated successfully.', 'success');
+            }).catch(err => {
+                btn.innerHTML = originalContent;
+                showToast('Export Failed', 'Error generating PDF.', 'error');
+                console.error(err);
+            });
+        }
+
+        // --- 7. Inventory CRUD & Bulk Actions Module ---
         function renderTable() {
             let data = getFilteredData();
             
-            // Search & Filters
             const search = document.getElementById('searchInput').value.toLowerCase();
             const fStatus = document.getElementById('filterStatus').value;
             const fCenter = document.getElementById('filterCenter') ? document.getElementById('filterCenter').value : '';
 
             data = data.filter(d => {
-                const s = search === '' || (d.tagId && d.tagId.toLowerCase().includes(search)) || 
-                                           (d.modelName && d.modelName.toLowerCase().includes(search)) || 
-                                           (d.imei && d.imei.toLowerCase().includes(search));
+                let s = false;
+                if (search === 'non-pro') {
+                    // Smart filter: exclude any device that has 'pro' in the model name (handles nulls safely)
+                    s = (!d.modelName || !d.modelName.toLowerCase().includes('pro'));
+                } else if (search === 'pro') {
+                    s = d.modelName && d.modelName.toLowerCase().includes('pro');
+                } else {
+                    s = search === '' || (d.tagId && d.tagId.toLowerCase().includes(search)) || 
+                                         (d.modelName && d.modelName.toLowerCase().includes(search)) || 
+                                         (d.imei && d.imei.toLowerCase().includes(search));
+                }
                 const stat = fStatus === '' || (d.status && d.status === fStatus);
                 const cen = fCenter === '' || (d.location && d.location === fCenter);
                 return s && stat && cen;
             });
             
-            // Sorting (Simple numeric by sNo for now)
             data.sort((a,b) => {
                 let valA = parseInt(a.sNo) || 0;
                 let valB = parseInt(b.sNo) || 0;
@@ -943,9 +1065,8 @@
                 document.getElementById('emptyState').classList.remove('flex');
                 
                 data.forEach(d => {
-                    // Status styling logic
                     const statusLower = (d.status || '').toLowerCase();
-                    let statusClass = 'bg-slate-700 text-slate-300'; // Default
+                    let statusClass = 'bg-slate-700 text-slate-300'; 
                     if (statusLower === 'active') statusClass = 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400';
                     else if (statusLower.includes('faulty')) statusClass = 'bg-rose-500/10 border-rose-500/50 text-rose-400';
                     else if (statusLower.includes('repair')) statusClass = 'bg-amber-500/10 border-amber-500/50 text-amber-400';
@@ -953,34 +1074,157 @@
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-slate-800/80 transition-colors group cursor-default';
                     row.innerHTML = `
+                        <td class="py-3 px-4 w-10 text-center">
+                            <input type="checkbox" class="row-checkbox w-4 h-4 rounded border-slate-600 bg-slate-800 cursor-pointer accent-primary" value="${d.id}" onchange="updateBulkActions()">
+                        </td>
                         <td class="py-3 px-5 text-slate-400 font-medium">${d.sNo || '-'}</td>
                         <td class="py-3 px-5 font-mono text-primary font-bold">${d.tagId || '-'}</td>
                         <td class="py-3 px-5"><span class="bg-slate-800 text-[10px] px-2 py-1 rounded border border-slate-600 font-bold">${d.location || 'UNKN'}</span></td>
                         <td class="py-3 px-5 font-semibold text-slate-200">${d.modelName || '-'}</td>
                         <td class="py-3 px-5 text-slate-400 text-xs font-semibold">${d.projectName || '-'}</td>
                         <td class="py-3 px-5 font-mono text-xs text-slate-500 group-hover:text-slate-300 transition-colors">${d.imei || '-'}</td>
-                        <td class="py-3 px-5 text-xs text-slate-400">${d.color || '-'}</td>
                         <td class="py-3 px-5">
                             <span class="text-[10px] px-2.5 py-1 rounded border font-bold uppercase tracking-wider ${statusClass}">${d.status || 'UNKNOWN'}</span>
                         </td>
-                        <td class="py-3 px-5">
-                            <div class="flex flex-col">
-                                <span class="text-xs font-semibold text-slate-300">${d.lastEditedBy || '-'}</span>
-                                <span class="text-[9px] text-slate-500">${d.lastEditedTime || '-'}</span>
-                            </div>
-                        </td>
                         <td class="py-3 px-5 text-right opacity-50 group-hover:opacity-100 transition-opacity">
-                            <button onclick="editDevice(${d.id})" class="w-8 h-8 rounded hover:bg-indigo-500/20 text-slate-400 hover:text-indigo-400 transition-colors"><i class="fas fa-pen"></i></button>
-                            <button onclick="deleteDevice(${d.id})" class="w-8 h-8 rounded hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"><i class="fas fa-trash-alt"></i></button>
+                            <button onclick="openQRModal('${d.tagId || ''}', '${d.imei || ''}')" title="Generate QR Code" class="w-8 h-8 rounded hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"><i class="fas fa-qrcode"></i></button>
+                            <button onclick="editDevice(${d.id})" title="Edit Device" class="w-8 h-8 rounded hover:bg-indigo-500/20 text-slate-400 hover:text-indigo-400 transition-colors"><i class="fas fa-pen"></i></button>
+                            <button onclick="deleteDevice(${d.id})" title="Delete Device" class="w-8 h-8 rounded hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"><i class="fas fa-trash-alt"></i></button>
                         </td>
                     `;
                     tbody.appendChild(row);
                 });
             }
             document.getElementById('recordCountDisplay').innerText = `Showing ${data.length} records`;
+            updateBulkActions(); // Reset bulk actions on render
         }
 
-        // Sorting toggler
+        // --- Bulk Action Logic ---
+        function toggleAllCheckboxes() {
+            const master = document.getElementById('selectAllCheckbox');
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(cb => cb.checked = master.checked);
+            updateBulkActions();
+        }
+
+        function updateBulkActions() {
+            const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+            const bulkContainer = document.getElementById('bulkActions');
+            const selectedCount = document.getElementById('selectedCount');
+            if (checkboxes.length > 0) {
+                bulkContainer.classList.remove('hidden');
+                bulkContainer.classList.add('flex');
+                selectedCount.innerText = checkboxes.length;
+            } else {
+                bulkContainer.classList.add('hidden');
+                bulkContainer.classList.remove('flex');
+                document.getElementById('selectAllCheckbox').checked = false;
+            }
+        }
+
+        function getSelectedIds() {
+            const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+            return Array.from(checkboxes).map(cb => parseInt(cb.value));
+        }
+
+        function bulkUpdateStatus(newStatus) {
+            const ids = getSelectedIds();
+            if (ids.length === 0) return;
+            
+            const timestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
+            const editor = currentUser ? (currentUser.role === 'admin' ? 'Admin (' + currentUser.code + ')' : currentUser.name + ' (' + currentUser.code + ')') : 'System';
+
+            let updatedCount = 0;
+            inventoryData = inventoryData.map(d => {
+                if (ids.includes(d.id)) {
+                    if(currentUser.role === 'admin' || d.location === currentUser.code) {
+                        updatedCount++;
+                        return { ...d, status: newStatus, lastEditedBy: editor, lastEditedTime: timestamp };
+                    }
+                }
+                return d;
+            });
+
+            if (updatedCount > 0) {
+                saveToLocal();
+                renderTable();
+                showToast('Bulk Update', `Successfully updated ${updatedCount} assets to ${newStatus}.`, 'success');
+                pushToGAS();
+            }
+        }
+
+        function bulkDelete() {
+            const ids = getSelectedIds();
+            if (ids.length === 0) return;
+            if (confirm(`CRITICAL: Are you sure you want to permanently delete these ${ids.length} selected assets?`)) {
+                let deletedCount = 0;
+                inventoryData = inventoryData.filter(d => {
+                    if (ids.includes(d.id)) {
+                        if(currentUser.role === 'admin' || d.location === currentUser.code) {
+                            deletedCount++;
+                            return false;
+                        }
+                    }
+                    return true;
+                });
+
+                if (deletedCount > 0) {
+                    saveToLocal();
+                    renderTable();
+                    showToast('Bulk Delete', `Successfully deleted ${deletedCount} assets.`, 'info');
+                    pushToGAS();
+                }
+            }
+        }
+
+        // --- QR Code Generator Logic ---
+        let qrCodeInstance = null;
+        function openQRModal(tagId, imei) {
+            document.getElementById('qrSubtitle').innerText = `${tagId} | IMEI: ${imei}`;
+            const container = document.getElementById('qrcodeContainer');
+            container.innerHTML = ''; // clear previous
+            
+            qrCodeInstance = new QRCode(container, {
+                text: JSON.stringify({ TagID: tagId, IMEI: imei }),
+                width: 150,
+                height: 150,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+
+            const modal = document.getElementById('qrModal');
+            const content = document.getElementById('qrModalContent');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => { content.classList.remove('scale-95'); content.classList.add('scale-100'); }, 10);
+        }
+
+        function closeQRModal() {
+            const modal = document.getElementById('qrModal');
+            const content = document.getElementById('qrModalContent');
+            content.classList.remove('scale-100'); content.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 200);
+        }
+
+        function printQR() {
+            const qrContent = document.getElementById('qrcodeContainer').innerHTML;
+            const subtitle = document.getElementById('qrSubtitle').innerText;
+            const printWindow = window.open('', '', 'height=500, width=500');
+            printWindow.document.write('<html><head><title>Print Asset Label</title>');
+            printWindow.document.write('<style>body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; } p { font-size: 14px; margin-top: 10px; font-weight: bold; }</style>');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write(qrContent);
+            printWindow.document.write(`<p>${subtitle}</p>`);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 250);
+        }
+
         function sortTable(col) {
             currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
             renderTable();
@@ -992,11 +1236,10 @@
             document.getElementById('deviceId').value = '';
             document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus-circle text-primary"></i> Add New Asset';
             
-            // Lock location field if center role
             if (currentUser.role === 'center') {
                 document.getElementById('location').value = currentUser.code;
             } else {
-                document.getElementById('location').value = 'RCR'; // Default
+                document.getElementById('location').value = 'RCR'; 
             }
 
             if (id) {
@@ -1016,7 +1259,6 @@
                     document.getElementById('color').value = d.color || '';
                 }
             } else {
-                // Auto inc sNo
                 let maxSNo = 0;
                 inventoryData.forEach(d => { if(parseInt(d.sNo) > maxSNo) maxSNo = parseInt(d.sNo); });
                 document.getElementById('sNo').value = maxSNo + 1;
@@ -1071,11 +1313,12 @@
             saveToLocal();
             renderTable();
             closeDeviceModal();
-            pushToGAS(); // Auto-sync to backend
+            pushToGAS(); 
         }
 
         function editDevice(id) {
             const d = inventoryData.find(x => x.id === id);
+            if (!d) return;
             if(currentUser.role !== 'admin' && d.location !== currentUser.code) {
                 showToast('Access Denied', 'You lack permissions to edit records from other centers.', 'error');
                 return;
@@ -1085,16 +1328,17 @@
 
         function deleteDevice(id) {
             const d = inventoryData.find(x => x.id === id);
+            if (!d) return;
             if(currentUser.role !== 'admin' && d.location !== currentUser.code) {
                 showToast('Access Denied', 'Cannot delete records outside your jurisdiction.', 'error');
                 return;
             }
-            if (confirm(`CRITICAL: Confirm deletion of asset ${d.tagId}?`)) {
+            if (confirm(`CRITICAL: Confirm deletion of asset ${d.tagId || id}?`)) {
                 inventoryData = inventoryData.filter(x => x.id !== id);
                 saveToLocal();
                 renderTable();
                 showToast('Deleted', 'Asset successfully removed from database.', 'info');
-                pushToGAS(); // Auto-sync to backend
+                pushToGAS(); 
             }
         }
 
@@ -1105,13 +1349,13 @@
             tbody.innerHTML = '';
             
             centersData.forEach((c) => {
-                if (c.code.toLowerCase() === 'admin') return; // Hide admin account from table
+                if ((c.code || '').toLowerCase() === 'admin') return; 
                 const row = document.createElement('tr');
                 row.className = 'hover:bg-slate-800/80 transition-colors group cursor-default';
                 row.innerHTML = `
-                    <td class="py-3 px-5 font-mono text-secondary font-bold">${c.code}</td>
-                    <td class="py-3 px-5 font-semibold text-slate-200">${c.name}</td>
-                    <td class="py-3 px-5 text-slate-400 font-mono text-xs"><span class="blur-sm hover:blur-none transition-all cursor-pointer select-all">${c.password}</span></td>
+                    <td class="py-3 px-5 font-mono text-secondary font-bold">${c.code || '-'}</td>
+                    <td class="py-3 px-5 font-semibold text-slate-200">${c.name || '-'}</td>
+                    <td class="py-3 px-5 text-slate-400 font-mono text-xs"><span class="blur-sm hover:blur-none transition-all cursor-pointer select-all">${c.password || '-'}</span></td>
                     <td class="py-3 px-5 text-right opacity-50 group-hover:opacity-100 transition-opacity">
                         <button onclick="editCenter('${c.code}')" class="w-8 h-8 rounded hover:bg-teal-500/20 text-slate-400 hover:text-teal-400 transition-colors"><i class="fas fa-pen"></i></button>
                         <button onclick="deleteCenter('${c.code}')" class="w-8 h-8 rounded hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"><i class="fas fa-trash-alt"></i></button>
@@ -1134,7 +1378,7 @@
                     document.getElementById('centerModalTitle').innerHTML = '<i class="fas fa-edit text-secondary"></i> Edit Center';
                     document.getElementById('editCenterId').value = c.code;
                     document.getElementById('centerCode').value = c.code;
-                    document.getElementById('centerCode').disabled = true; // Prevent changing unique code
+                    document.getElementById('centerCode').disabled = true; 
                     document.getElementById('centerName').value = c.name;
                     document.getElementById('centerPassword').value = c.password;
                 }
@@ -1169,7 +1413,6 @@
                 }
                 showToast('Success', 'Center updated successfully.', 'success');
             } else {
-                // Check if code exists
                 if (centersData.some(x => x.code === code)) {
                     showToast('Error', 'Center Code already exists!', 'error');
                     return;
@@ -1181,7 +1424,7 @@
             populateCenterDropdowns();
             renderCentersTable();
             closeCenterModal();
-            pushCentersToGAS(); // Auto sync
+            pushCentersToGAS(); 
         }
 
         function editCenter(code) {
@@ -1194,22 +1437,66 @@
                 populateCenterDropdowns();
                 renderCentersTable();
                 showToast('Deleted', 'Center successfully removed.', 'info');
-                pushCentersToGAS(); // Auto sync
+                pushCentersToGAS();
             }
         }
 
-        // --- 8. Integration Hub (Excel & Google Apps Script) ---
-        
-        // 8A. Google Apps Script Logic
+        // --- 7.6 Center Analytics Module ---
+        function renderCenterStats() {
+            const tbody = document.getElementById('centerStatsTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            let grandTotal = 0;
+            let grandActive = 0;
+            let grandFaulty = 0;
+
+            centersData.forEach((c) => {
+                if ((c.code || '').toLowerCase() === 'admin') return;
+                
+                const centerDevices = inventoryData.filter(d => d.location === c.code);
+                const total = centerDevices.length;
+                const active = centerDevices.filter(d => (d.status || '').toLowerCase() === 'active').length;
+                const faulty = centerDevices.filter(d => { const stat = (d.status || '').toLowerCase(); return stat.includes('faulty') || stat.includes('repair'); }).length;
+                
+                grandTotal += total;
+                grandActive += active;
+                grandFaulty += faulty;
+
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-slate-800/80 transition-colors group cursor-default';
+                row.innerHTML = `
+                    <td class="py-3 px-5 font-mono text-secondary font-bold">${c.code}</td>
+                    <td class="py-3 px-5 font-semibold text-slate-200">${c.name}</td>
+                    <td class="py-3 px-5 font-bold text-blue-400">${total}</td>
+                    <td class="py-3 px-5 font-bold text-emerald-400">${active}</td>
+                    <td class="py-3 px-5 font-bold text-rose-400">${faulty}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'bg-slate-800/50 font-black border-t-2 border-slate-700';
+            totalRow.innerHTML = `
+                <td class="py-4 px-5 font-mono text-white uppercase tracking-wider" colspan="2">Global Grand Total</td>
+                <td class="py-4 px-5 text-blue-400">${grandTotal}</td>
+                <td class="py-4 px-5 text-emerald-400">${grandActive}</td>
+                <td class="py-4 px-5 text-rose-400">${grandFaulty}</td>
+            `;
+            tbody.appendChild(totalRow);
+        }
+
+        // --- 8. Integration Hub (Excel & GAS) ---
         function logSync(msg) {
             const consoleEl = document.getElementById('syncConsole');
+            if(!consoleEl) return;
             const time = new Date().toLocaleTimeString();
             consoleEl.innerHTML += `<br><span class="text-slate-500">[${time}]</span> ${msg}`;
             consoleEl.scrollTop = consoleEl.scrollHeight;
         }
 
         async function pullFromGAS() {
-            logSync('Initiating POST request to Apps Script backend (fetch action)...');
+            logSync('Fetching data from GAS backend...');
             document.getElementById('globalLoader').classList.remove('hidden');
             document.getElementById('globalLoader').classList.add('flex');
             try {
@@ -1237,20 +1524,13 @@
                         lastEditedTime: row['Last Edited Time'] || row['lastEditedTime'] || ''
                     }));
                     saveToLocal();
-                    if (document.getElementById('view-inventory').classList.contains('flex')) {
-                        renderTable();
-                    }
-                    if (document.getElementById('view-dashboard').classList.contains('block') || !document.getElementById('view-dashboard').classList.contains('hidden')) {
-                        renderDashboard();
-                    }
-                    logSync(`Pull complete. Mapped ${inventoryData.length} records.`);
-                    showToast('Sync Complete', 'Data successfully pulled from Google Sheets.', 'success');
-                } else {
-                    throw new Error('Data payload invalid or empty.');
+                    if (document.getElementById('view-inventory').classList.contains('flex')) renderTable();
+                    if (document.getElementById('view-dashboard').classList.contains('block') || !document.getElementById('view-dashboard').classList.contains('hidden')) renderDashboard();
+                    logSync(`Pull complete. Loaded ${inventoryData.length} records.`);
+                    showToast('Sync Complete', 'Data successfully pulled from cloud.', 'success');
                 }
             } catch (err) {
                 logSync(`HTTP Error: ${err.message}`);
-                showToast('Sync Failed', 'Could not fetch data. Check console logs.', 'error');
             } finally {
                 document.getElementById('globalLoader').classList.add('hidden');
                 document.getElementById('globalLoader').classList.remove('flex');
@@ -1258,20 +1538,19 @@
         }
 
         async function pushToGAS() {
-            logSync('Formatting dataset for payload transmission...');
+            logSync('Transmitting data to GAS...');
             document.getElementById('globalLoader').classList.remove('hidden');
             document.getElementById('globalLoader').classList.add('flex');
             const exportData = inventoryData.map(d => ({
-                'S No': d.sNo, 'Tag ID': d.tagId, 'Location': d.location, 
-                'Project Name': d.projectName, 'Model Name': d.modelName, 
-                'Supplier': d.supplier, 'IMEI 1': d.imei, 'Storage': d.storage, 
-                'Mobile Color': d.color, 'Device Status': d.status,
+                'S No': d.sNo || '', 'Tag ID': d.tagId || '', 'Location': d.location || '', 
+                'Project Name': d.projectName || '', 'Model Name': d.modelName || '', 
+                'Supplier': d.supplier || '', 'IMEI 1': d.imei || '', 'Storage': d.storage || '', 
+                'Mobile Color': d.color || '', 'Device Status': d.status || '',
                 'Last Edited By': d.lastEditedBy || '',
                 'Last Edited Time': d.lastEditedTime || ''
             }));
 
             try {
-                logSync('Transmitting JSON data to GAS...');
                 const response = await fetch(GAS_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -1280,66 +1559,42 @@
                 
                 const result = await response.json();
                 if (result.status === 'success') {
-                    logSync('Google Sheet reflects changes successfully.');
-                    showToast('Cloud Sync Complete', 'Data safely stored in Google servers.', 'success');
-                } else {
-                    throw new Error(result.message);
+                    logSync('Google Sheet sync successful.');
+                    showToast('Cloud Sync Complete', 'Data safely stored.', 'success');
                 }
             } catch (err) {
                 logSync(`Transmission Error: ${err.message}`);
-                showToast('Sync Failed', 'Failed to push data.', 'error');
             } finally {
                 document.getElementById('globalLoader').classList.add('hidden');
                 document.getElementById('globalLoader').classList.remove('flex');
             }
         }
 
-        // 8B. SheetJS (Excel) Logic
         function setupDropZone() {
             const dropZone = document.getElementById('dropZone');
             const fileInput = document.getElementById('fileInput');
-
+            if(!dropZone || !fileInput) return;
             dropZone.addEventListener('click', () => fileInput.click());
-            
-            dropZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                dropZone.classList.add('dragover');
-            });
-            ['dragleave', 'dragend'].forEach(type => {
-                dropZone.addEventListener(type, () => dropZone.classList.remove('dragover'));
-            });
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+            ['dragleave', 'dragend'].forEach(type => { dropZone.addEventListener(type, () => dropZone.classList.remove('dragover')); });
             dropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropZone.classList.remove('dragover');
+                e.preventDefault(); dropZone.classList.remove('dragover');
                 if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
             });
-            fileInput.addEventListener('change', (e) => {
-                if (e.target.files.length) handleFile(e.target.files[0]);
-            });
+            fileInput.addEventListener('change', (e) => { if (e.target.files.length) handleFile(e.target.files[0]); });
         }
 
         function handleFile(file) {
-            if (!file.name.includes('.xls') && !file.name.includes('.csv')) {
-                showToast('File Error', 'Please upload a valid Excel or CSV file.', 'error');
-                return;
-            }
-            logSync(`Reading uploaded file: ${file.name}...`);
+            logSync(`Reading ${file.name}...`);
             const reader = new FileReader();
-            
             reader.onload = (e) => {
                 try {
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
-                    
-                    // Try to find the Master Data sheet, or just use the first one
                     let sheetName = workbook.SheetNames.includes('Master_Inventory_Data') ? 'Master_Inventory_Data' : workbook.SheetNames[0];
-                    logSync(`Parsing sheet: ${sheetName}...`);
-                    
-                    const worksheet = workbook.Sheets[sheetName];
-                    const json = XLSX.utils.sheet_to_json(worksheet);
+                    const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
                     
                     if(json.length > 0) {
-                        // Map the raw excel columns to our internal structure
                         inventoryData = json.map((row, idx) => ({
                             id: Date.now() + idx,
                             sNo: row['S No'] || idx + 1,
@@ -1352,73 +1607,42 @@
                             status: row['Device Status'] || 'Active',
                             storage: row['Storage'] || '',
                             color: row['Mobile Color'] || ''
-                        })).filter(d => d.tagId !== ''); // Filter out completely empty rows
+                        })).filter(d => d.tagId !== ''); 
 
                         saveToLocal();
-                        logSync(`Import successful. Loaded ${inventoryData.length} records.`);
-                        showToast('Import Complete', `Successfully loaded ${inventoryData.length} devices from Excel.`, 'success');
-                    } else {
-                        logSync('Sheet appears to be empty.');
-                        showToast('Warning', 'The uploaded sheet contained no data.', 'error');
+                        logSync(`Import loaded ${inventoryData.length} records.`);
+                        showToast('Import Complete', `Loaded ${inventoryData.length} devices.`, 'success');
                     }
                 } catch (error) {
-                    logSync(`Excel parsing error: ${error.message}`);
-                    showToast('Import Failed', 'Failed to read the Excel file.', 'error');
+                    showToast('Import Failed', 'Failed to read file.', 'error');
                 }
             };
             reader.readAsArrayBuffer(file);
         }
 
         function exportToExcel() {
-            logSync('Preparing Excel workbook generation...');
-            
-            // Format data for sheet
             const exportArr = inventoryData.map(d => ({
-                'S No': d.sNo,
-                'Tag ID': d.tagId,
-                'Project Name': d.projectName,
-                'Model Name': d.modelName,
-                'Supplier': d.supplier,
-                'Location': d.location,
-                'IMEI 1': d.imei,
-                'Storage': d.storage,
-                'Mobile Color': d.color,
-                'Device Status': d.status,
-                'Last Edited By': d.lastEditedBy || '',
-                'Last Edited Time': d.lastEditedTime || ''
+                'S No': d.sNo || '', 'Tag ID': d.tagId || '', 'Project Name': d.projectName || '', 'Model Name': d.modelName || '',
+                'Supplier': d.supplier || '', 'Location': d.location || '', 'IMEI 1': d.imei || '', 'Storage': d.storage || '',
+                'Mobile Color': d.color || '', 'Device Status': d.status || '', 'Last Edited By': d.lastEditedBy || '', 'Last Edited Time': d.lastEditedTime || ''
             }));
-
-            // Create Workbook
             const worksheet = XLSX.utils.json_to_sheet(exportArr);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Master_Inventory_Data");
-            
-            // Download
             XLSX.writeFile(workbook, `T_and_M_Inventory_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
-            logSync('Excel file downloaded to client.');
-            showToast('Export Complete', 'File downloaded successfully.', 'success');
+            showToast('Export Complete', 'File downloaded.', 'success');
         }
 
-        // --- UI Utilities ---
         function showToast(title, msg, type = 'info') {
             const toast = document.getElementById('toast');
+            if(!toast) return;
             document.getElementById('toastTitle').innerText = title;
             document.getElementById('toastMsg').innerText = msg;
-            
             const icon = document.getElementById('toastIcon');
             toast.className = 'fixed top-5 right-5 z-[100] transform transition-transform duration-300 px-5 py-4 rounded-xl shadow-2xl flex items-center gap-4 min-w-[300px] border-l-4';
-            
-            if (type === 'success') {
-                toast.classList.add('bg-slate-800', 'border-emerald-500', 'text-white');
-                icon.className = 'fas fa-check-circle text-emerald-400 text-2xl';
-            } else if (type === 'error') {
-                toast.classList.add('bg-slate-800', 'border-rose-500', 'text-white');
-                icon.className = 'fas fa-exclamation-triangle text-rose-400 text-2xl';
-            } else {
-                toast.classList.add('bg-slate-800', 'border-primary', 'text-white');
-                icon.className = 'fas fa-info-circle text-primary text-2xl';
-            }
-
+            if (type === 'success') { toast.classList.add('bg-slate-800', 'border-emerald-500', 'text-white'); icon.className = 'fas fa-check-circle text-emerald-400 text-2xl'; } 
+            else if (type === 'error') { toast.classList.add('bg-slate-800', 'border-rose-500', 'text-white'); icon.className = 'fas fa-exclamation-triangle text-rose-400 text-2xl'; } 
+            else { toast.classList.add('bg-slate-800', 'border-primary', 'text-white'); icon.className = 'fas fa-info-circle text-primary text-2xl'; }
             toast.classList.remove('translate-x-full');
             setTimeout(() => toast.classList.add('translate-x-full'), 3500);
         }
