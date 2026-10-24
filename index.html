@@ -118,7 +118,7 @@
             </form>
             
             <div class="mt-8 pt-6 border-t border-slate-700/50 text-center text-xs text-slate-500 flex justify-between">
-                <div><span class="block text-slate-400 font-semibold mb-1">Global Admin</span><code>admin</code> / <code>admin123</code></div>
+                <div><span class="block text-slate-400 font-semibold mb-1">Super Admin (Full Access)</span><code>superadmin</code> / <code>superadmin123</code></div><div><span class="block text-slate-400 font-semibold mb-1">Admin (Management Access)</span><code>admin</code> / <code>admin123</code></div>
                 <div><span class="block text-slate-400 font-semibold mb-1">Center Portal</span><code>YGR</code> / <code>YGR123</code></div>
             </div>
         </div>
@@ -146,6 +146,12 @@
                 </button>
                 <button onclick="switchView('inventory')" id="nav-inventory" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800 transition-all text-left">
                     <i class="fas fa-boxes w-5 text-center"></i> Master Inventory
+                </button>
+                <button onclick="switchView('redundancy')" id="nav-redundancy" class="nav-item hidden w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800 transition-all text-left">
+                    <i class="fas fa-clone w-5 text-center"></i> Redundancy Filter
+                </button>
+                <button onclick="switchView('transit')" id="nav-transit" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800 transition-all text-left">
+                    <i class="fas fa-truck-moving w-5 text-center"></i> Asset Transit
                 </button>
                 <button onclick="switchView('integrations')" id="nav-integrations" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800 transition-all text-left">
                     <i class="fas fa-plug w-5 text-center"></i> Integration Hub
@@ -307,7 +313,10 @@
                                 <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search IMEI, Tag ID, Model..." class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all">
                             </div>
                             
-                            <div class="flex w-full sm:w-auto gap-3 ml-auto">
+                            <div class="flex flex-wrap w-full gap-3 items-center">
+                                <label class="text-xs text-slate-400">Asset date from <input type="date" id="filterDateFrom" onchange="renderTable()" class="ml-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-white"></label>
+                                <label class="text-xs text-slate-400">to <input type="date" id="filterDateTo" onchange="renderTable()" class="ml-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-white"></label>
+                                <div class="flex w-full sm:w-auto gap-3 ml-auto">
                                 <select id="filterStatus" onchange="renderTable()" class="bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-4 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer">
                                     <option value="">All Statuses</option>
                                     <option value="Active">Active</option>
@@ -316,6 +325,14 @@
                                 <select id="filterCenter" onchange="renderTable()" class="bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-4 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer hidden">
                                     <!-- Populated dynamically if admin -->
                                 </select>
+                                </div>
+                            </div>
+                            <div class="px-4 py-3 border-b border-slate-700 bg-slate-900/60 flex flex-wrap items-center gap-3">
+                                <span class="text-xs text-slate-400">Barcode selected assets (Tag ID, IMEI and Asset ID)</span>
+                                <label class="text-xs text-slate-300">Width (mm) <input id="barcodeWidth" type="number" min="25" max="100" value="50" class="ml-1 w-20 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white"></label>
+                                <label class="text-xs text-slate-300">Height (mm) <input id="barcodeHeight" type="number" min="15" max="80" value="30" class="ml-1 w-20 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-white"></label>
+                                <button onclick="generateSelectedBarcodes()" class="text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg"><i class="fas fa-barcode mr-1"></i> Generate Selected</button>
+                                <button onclick="generateFilteredBarcodes()" class="text-xs font-bold bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg">Generate All Filtered</button>
                             </div>
                         </div>
 
@@ -331,6 +348,7 @@
                                         <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest cursor-pointer hover:text-white" onclick="sortTable('sNo')">S No <i class="fas fa-sort ml-1 opacity-50"></i></th>
                                         <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Tag ID</th>
                                         <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Center</th>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Asset Date</th>
                                         <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Model Name</th>
                                         <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Project</th>
                                         <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">IMEI</th>
@@ -358,6 +376,64 @@
                             <span id="recordCountDisplay" class="bg-slate-800 px-3 py-1 rounded-full">Showing 0 records</span>
                             <span class="text-[10px] uppercase tracking-widest flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-emerald-500"></div> Connected</span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- ADMIN ONLY: REDUNDANCY FILTER -->
+                <div id="view-redundancy" class="view-section hidden flex-col h-full min-h-[calc(100vh-6rem)]">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                        <div>
+                            <h1 class="text-3xl font-bold text-white tracking-tight">Redundancy Filter</h1>
+                            <p class="text-slate-400 text-sm mt-1">Find possible duplicate inventory records by Tag ID or IMEI. Review records before editing or deleting.</p>
+                        </div>
+                        <button onclick="renderRedundancy()" class="px-4 py-2.5 rounded-xl text-sm font-bold bg-primary hover:bg-indigo-500 text-white"><i class="fas fa-sync-alt mr-2"></i>Refresh Scan</button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+                        <div class="glass-panel rounded-2xl p-5"><p class="text-xs uppercase tracking-wider text-slate-400">Duplicate Groups</p><p id="redundancyGroups" class="text-3xl font-black text-amber-400 mt-2">0</p></div>
+                        <div class="glass-panel rounded-2xl p-5"><p class="text-xs uppercase tracking-wider text-slate-400">Flagged Records</p><p id="redundancyRecords" class="text-3xl font-black text-rose-400 mt-2">0</p></div>
+                        <div class="glass-panel rounded-2xl p-5"><p class="text-xs uppercase tracking-wider text-slate-400">Unique Records</p><p id="redundancyUnique" class="text-3xl font-black text-emerald-400 mt-2">0</p></div>
+                    </div>
+                    <div class="glass-panel rounded-2xl overflow-hidden flex flex-col flex-1 shadow-2xl">
+                        <div class="p-4 border-b border-slate-700 flex flex-col lg:flex-row gap-3">
+                            <input id="redundancySearch" oninput="renderRedundancy()" type="text" placeholder="Search Tag ID, IMEI, model..." class="flex-1 rounded-xl py-2.5 px-4 text-sm text-white">
+                            <select id="redundancyType" onchange="renderRedundancy()" class="rounded-xl py-2.5 px-4 text-sm text-white">
+                                <option value="all">All duplicate types</option><option value="tagId">Duplicate Tag ID</option><option value="imei">Duplicate IMEI</option>
+                            </select>
+                            <select id="redundancyCenter" onchange="renderRedundancy()" class="rounded-xl py-2.5 px-4 text-sm text-white"><option value="">All Centers</option></select>
+                        </div>
+                        <div class="overflow-auto flex-1">
+                            <table class="w-full text-left text-sm whitespace-nowrap">
+                                <thead class="sticky top-0 z-10 text-slate-400 bg-slate-900"><tr>
+                                    <th class="py-3 px-4">Issue</th><th class="py-3 px-4">Duplicate Value</th><th class="py-3 px-4">Tag ID</th><th class="py-3 px-4">Center</th><th class="py-3 px-4">Model</th><th class="py-3 px-4">IMEI</th><th class="py-3 px-4">Status</th><th class="py-3 px-4">Action</th>
+                                </tr></thead>
+                                <tbody id="redundancyTableBody" class="divide-y divide-slate-800/60"></tbody>
+                            </table>
+                            <div id="redundancyEmpty" class="hidden p-10 text-center text-slate-400">No duplicate records found for the selected filters.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ASSET TRANSIT / INTER-CENTER TRANSFER VIEW -->
+                <div id="view-transit" class="view-section hidden flex-col h-full min-h-[calc(100vh-6rem)]">
+                    <div class="mb-6">
+                        <h1 class="text-3xl font-bold text-white tracking-tight">Asset Transit</h1>
+                        <p class="text-slate-400 text-sm mt-1">Transfer assets between centers. The receiving center confirms delivery; the asset then moves to the destination center automatically.</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl p-5 mb-6">
+                        <h2 class="text-lg font-bold text-white mb-4"><i class="fas fa-exchange-alt text-primary mr-2"></i>Create / Update Transfer</h2>
+                        <form id="transitForm" onsubmit="saveTransit(event)" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                            <div><label class="block text-xs font-bold text-slate-400 mb-1 uppercase">Asset</label><select id="transitAsset" required class="w-full rounded-xl py-2.5 px-3 text-sm text-white"><option value="">Select asset...</option></select></div>
+                            <div><label class="block text-xs font-bold text-slate-400 mb-1 uppercase">From Center</label><select id="transitFrom" required onchange="refreshTransitAssets()" class="w-full rounded-xl py-2.5 px-3 text-sm text-white"></select></div>
+                            <div><label class="block text-xs font-bold text-slate-400 mb-1 uppercase">To Center</label><select id="transitTo" required class="w-full rounded-xl py-2.5 px-3 text-sm text-white"></select></div>
+                            <div><label class="block text-xs font-bold text-slate-400 mb-1 uppercase">Transit Status</label><select id="transitStatus" required class="w-full rounded-xl py-2.5 px-3 text-sm text-white"><option value="In Transit">In Transit</option><option value="Received">Received</option><option value="Cancelled">Cancelled</option></select></div>
+                            <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-400 mb-1 uppercase">Remarks / Handover Reference</label><input id="transitNote" type="text" placeholder="Courier, handover note, approval reference..." class="w-full rounded-xl py-2.5 px-3 text-sm text-white"></div>
+                            <div class="flex items-end"><button type="submit" class="w-full bg-gradient-to-r from-primary to-indigo-600 hover:from-indigo-500 text-white font-bold py-2.5 rounded-xl"><i class="fas fa-save mr-2"></i>Save Transfer</button></div>
+                        </form>
+                        <p class="text-xs text-amber-300 mt-3"><i class="fas fa-info-circle mr-1"></i>Only the destination center (or Admin) can mark a transfer as Received. Receipt updates the asset's center; it does not delete the asset record.</p>
+                    </div>
+                    <div class="glass-panel rounded-2xl overflow-hidden flex flex-col flex-1 shadow-2xl">
+                        <div class="p-4 border-b border-slate-700 flex flex-col md:flex-row gap-3"><input id="transitSearch" oninput="renderTransitTable()" placeholder="Search Tag ID, IMEI, center..." class="flex-1 rounded-xl py-2.5 px-4 text-sm text-white"><select id="transitFilterStatus" onchange="renderTransitTable()" class="rounded-xl py-2.5 px-4 text-sm text-white"><option value="">All Transit Statuses</option><option>In Transit</option><option>Received</option><option>Cancelled</option></select><select id="transitFilterCenter" onchange="renderTransitTable()" class="rounded-xl py-2.5 px-4 text-sm text-white"><option value="">All Centers</option></select></div>
+                        <div class="overflow-auto"><table class="w-full text-left text-sm whitespace-nowrap"><thead class="sticky top-0 bg-slate-900 text-slate-400"><tr><th class="py-3 px-4">Tag ID</th><th class="py-3 px-4">IMEI</th><th class="py-3 px-4">From</th><th class="py-3 px-4">To</th><th class="py-3 px-4">Transit Status</th><th class="py-3 px-4">Transit Date &amp; Time</th><th class="py-3 px-4">Received Date &amp; Time</th><th class="py-3 px-4">Remarks</th><th class="py-3 px-4">Action</th></tr></thead><tbody id="transitTableBody" class="divide-y divide-slate-800/60"></tbody></table><div id="transitEmpty" class="hidden p-8 text-center text-slate-400">No transfer records match these filters.</div></div>
                     </div>
                 </div>
 
@@ -424,12 +500,12 @@
                 <!-- 3. INTEGRATION HUB VIEW -->
                 <div id="view-integrations" class="view-section hidden">
                     <h1 class="text-3xl font-bold text-white tracking-tight mb-1">Integration Hub</h1>
-                    <p class="text-slate-400 text-sm mb-8">Import/Export Excel files directly and synchronize with Google Sheets.</p>
+                    <p id="integrationSubtitle" class="text-slate-400 text-sm mb-8">Import/export Excel files and synchronize with Google Sheets.</p>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         
                         <!-- Panel A: Google Apps Script API -->
-                        <div class="glass-panel p-8 rounded-2xl border border-slate-700 shadow-xl flex flex-col">
+                        <div id="integrationSyncPanel" class="glass-panel p-8 rounded-2xl border border-slate-700 shadow-xl flex flex-col">
                             <div class="flex items-center gap-3 mb-6">
                                 <div class="w-12 h-12 bg-blue-500/20 text-blue-400 rounded-xl flex items-center justify-center text-xl">
                                     <i class="fab fa-google"></i>
@@ -474,7 +550,7 @@
                                     <i class="fas fa-file-excel"></i>
                                 </div>
                                 <div>
-                                    <h2 class="text-xl font-bold text-white">Excel Import / Export</h2>
+                                    <h2 id="excelPanelTitle" class="text-xl font-bold text-white">Excel Import / Export</h2>
                                     <p class="text-xs text-slate-400 mt-1">Operates locally via SheetJS in browser</p>
                                 </div>
                             </div>
@@ -493,7 +569,24 @@
                         </div>
                     </div>
                 </div>
+
+
             </div>
+            <!-- ABOUT / DEVELOPER INFO FOOTER -->
+                            <footer id="aboutDeveloper" class="shrink-0 px-4 md:px-8 pt-2 pb-3 border-t border-white/10 bg-[#0b1120]">
+                                <div id="developerInfo" class="glass-panel rounded-xl px-4 py-2 flex flex-nowrap items-center justify-center gap-x-5 text-center whitespace-nowrap overflow-x-auto">
+                                    <span class="inline-flex items-center gap-2 text-sm font-semibold text-slate-300">
+                                        <i class="fas fa-circle-info text-primary"></i> About / Developer Info
+                                    </span>
+                                    <span class="inline-flex items-center gap-2 text-sm font-bold text-white">
+                                        <i class="fas fa-code text-indigo-400"></i> Developed by Prasad J
+                                    </span>
+                                    <span class="text-sm text-slate-400">IPH CRM INDIVILLAGE · Mobile Device Asset Platform</span>
+                                    <a href="mailto:prasad.j@gmail.co" class="inline-flex items-center gap-2 text-sm font-bold text-indigo-300 hover:text-indigo-200 underline underline-offset-4">
+                                        <i class="fas fa-envelope"></i> prasad.j@indivillage.co
+                                    </a>
+                                </div>
+                            </footer>
         </main>
     </div>
 
@@ -709,6 +802,17 @@
             btn.disabled = true;
 
             try {
+                // Dedicated super-admin account. For production, validate this account in the GAS backend too.
+                if (u.toLowerCase() === 'superadmin' && p === 'superadmin123') {
+                    currentUser = { code: 'superadmin', username: 'superadmin', name: 'Super Administrator', role: 'superadmin' };
+                    sessionStorage.setItem('crm_user_session', JSON.stringify(currentUser));
+                    document.getElementById('loginForm').reset();
+                    showApp();
+                    showToast('Full Access Granted', 'Welcome, Super Administrator.', 'success');
+                    await pullCentersFromGAS();
+                    await pullFromGAS();
+                    return;
+                }
                 const response = await fetch(GAS_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -790,6 +894,7 @@
         }
 
         async function pushCentersToGAS() {
+            if (!currentUser || !['superadmin','admin'].includes(currentUser.role)) { showToast('Permission Restricted', 'Only Admin or Super Admin can change center master data.', 'error'); return; }
             const exportAuth = centersData.map(c => ({
                 Username: c.code,
                 Password: c.password,
@@ -818,23 +923,24 @@
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('appContainer').classList.remove('hidden');
             
-            document.getElementById('sidebarRoleLabel').innerText = currentUser.role === 'admin' ? 'Super Admin' : 'Center Manager';
-            document.getElementById('currentUserDisplay').innerText = currentUser.role === 'admin' ? 'System Admin' : `Manager - ${currentUser.code}`;
-            document.getElementById('currentLocationDisplay').innerText = currentUser.role === 'admin' ? 'Global Organization' : `${currentUser.code} Center Operations`;
+            document.getElementById('sidebarRoleLabel').innerText = currentUser.role === 'superadmin' ? 'Super Admin · Full Access' : (currentUser.role === 'admin' ? 'Admin · Management Access' : 'Center Manager');
+            document.getElementById('currentUserDisplay').innerText = ['admin','superadmin'].includes(currentUser.role) ? (currentUser.role === 'superadmin' ? 'Super Administrator' : 'Admin User') : `Manager - ${currentUser.code}`;
+            document.getElementById('currentLocationDisplay').innerText = ['admin','superadmin'].includes(currentUser.role) ? 'Global Organization' : `${currentUser.code} Center Operations`;
             
             const filterCenter = document.getElementById('filterCenter');
             const navCenters = document.getElementById('nav-centers');
             const navCenterStats = document.getElementById('nav-center-stats');
-            if (currentUser.role === 'admin') {
+            if (['admin','superadmin'].includes(currentUser.role)) {
                 filterCenter.classList.remove('hidden');
-                navCenters.classList.remove('hidden');
-                navCenters.classList.add('flex');
+                document.getElementById('nav-redundancy').classList.remove('hidden');
+                if (['admin','superadmin'].includes(currentUser.role)) { navCenters.classList.remove('hidden'); navCenters.classList.add('flex'); } else { navCenters.classList.add('hidden'); navCenters.classList.remove('flex'); }
                 navCenterStats.classList.remove('hidden');
                 navCenterStats.classList.add('flex');
                 document.getElementById('location').disabled = false;
                 document.getElementById('dashboardSubtitle').innerText = "Real-time overview of IT asset infrastructure across all locations";
             } else {
                 filterCenter.classList.add('hidden');
+                document.getElementById('nav-redundancy').classList.remove('hidden');
                 navCenters.classList.add('hidden');
                 navCenters.classList.remove('flex');
                 navCenterStats.classList.add('hidden');
@@ -844,23 +950,44 @@
                 document.getElementById('dashboardSubtitle').innerText = `Real-time overview of IT assets at ${currentUser.code}`;
             }
 
+            updateIntegrationPermissions();
             switchView('dashboard');
+        }
+
+        // Admin and Super Admin can synchronize with Google Sheets; only Super Admin can import/overwrite Excel data.
+        function updateIntegrationPermissions() {
+            const isSuperAdmin = !!currentUser && currentUser.role === 'superadmin';
+            const canSyncSheets = !!currentUser && ['admin','superadmin'].includes(currentUser.role);
+            const syncPanel = document.getElementById('integrationSyncPanel');
+            const dropZone = document.getElementById('dropZone');
+            const excelTitle = document.getElementById('excelPanelTitle');
+            const subtitle = document.getElementById('integrationSubtitle');
+            if (syncPanel) syncPanel.classList.toggle('hidden', !canSyncSheets);
+            if (dropZone) dropZone.classList.toggle('hidden', !isSuperAdmin);
+            if (excelTitle) excelTitle.textContent = isSuperAdmin ? 'Excel Import / Export (Super Admin)' : (canSyncSheets ? 'Excel Export Only (Admin)' : 'Excel Export Only');
+            if (subtitle) subtitle.textContent = isSuperAdmin
+                ? 'Super Admin can import/overwrite Excel data and synchronize with Google Sheets.'
+                : (canSyncSheets ? 'Admin can manage centers and inventory and synchronize with Google Sheets. Excel import/overwrite is restricted to Super Admin.' : 'Export only. Import, overwrite, cloud sync, and inventory-wide changes are restricted to Admin and Super Admin.');
         }
 
         // --- 4. Navigation ---
         function switchView(viewId) {
+            if (viewId === 'redundancy' && !currentUser) return;
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
-            if (viewId === 'inventory' || viewId === 'centers' || viewId === 'center-stats') document.getElementById(`view-${viewId}`).classList.add('flex');
+            if (viewId === 'inventory' || viewId === 'centers' || viewId === 'center-stats' || viewId === 'transit') document.getElementById(`view-${viewId}`).classList.add('flex');
             
             document.getElementById(`nav-${viewId}`).classList.add('active');
             
+            if (viewId === 'integrations') updateIntegrationPermissions();
             if (viewId === 'dashboard') renderDashboard();
             if (viewId === 'inventory') renderTable();
+            if (viewId === 'redundancy') renderRedundancy();
             if (viewId === 'centers') renderCentersTable();
             if (viewId === 'center-stats') renderCenterStats();
+            if (viewId === 'transit') { populateTransitDropdowns(); renderTransitTable(); }
         }
 
         function jumpToInventory(status = '', center = '', search = '') {
@@ -882,7 +1009,7 @@
 
         // --- 5. Data Access Helpers ---
         function getFilteredData() {
-            return currentUser.role === 'admin' ? [...inventoryData] : inventoryData.filter(d => d.location === currentUser.code);
+            return ['admin','superadmin'].includes(currentUser.role) ? [...inventoryData] : inventoryData.filter(d => d.location === currentUser.code);
         }
 
         function saveToLocal() {
@@ -914,7 +1041,7 @@
             if (centerChartInst) centerChartInst.destroy();
             
             let centerLabels = [], centerData = [];
-            if (currentUser.role === 'admin') {
+            if (['admin','superadmin'].includes(currentUser.role)) {
                 const centerCounts = {};
                 data.forEach(d => { if(d.location) centerCounts[d.location] = (centerCounts[d.location]||0) + 1; });
                 centerLabels = Object.keys(centerCounts);
@@ -945,7 +1072,7 @@
                         if (elements.length > 0) {
                             const index = elements[0].index;
                             const label = chart.data.labels[index];
-                            if (currentUser.role === 'admin') {
+                            if (['admin','superadmin'].includes(currentUser.role)) {
                                 jumpToInventory('', label, '');
                             } else {
                                 jumpToInventory('', '', label);
@@ -1030,6 +1157,8 @@
             const search = document.getElementById('searchInput').value.toLowerCase();
             const fStatus = document.getElementById('filterStatus').value;
             const fCenter = document.getElementById('filterCenter') ? document.getElementById('filterCenter').value : '';
+            const dateFrom = document.getElementById('filterDateFrom')?.value || '';
+            const dateTo = document.getElementById('filterDateTo')?.value || '';
 
             data = data.filter(d => {
                 let s = false;
@@ -1045,7 +1174,9 @@
                 }
                 const stat = fStatus === '' || (d.status && d.status === fStatus);
                 const cen = fCenter === '' || (d.location && d.location === fCenter);
-                return s && stat && cen;
+                const assetDate = d.assetDate || d.receivedDate || (d.transitReceivedAt ? String(d.transitReceivedAt).slice(0,10) : '');
+                const dateOk = (!dateFrom || (assetDate && assetDate >= dateFrom)) && (!dateTo || (assetDate && assetDate <= dateTo));
+                return s && stat && cen && dateOk;
             });
             
             data.sort((a,b) => {
@@ -1099,6 +1230,34 @@
             updateBulkActions(); // Reset bulk actions on render
         }
 
+        // --- QR label generation for selected or currently filtered assets (Tag ID + IMEI only) ---
+        function barcodeAssetText(d) {
+            return `Tag ID: ${d.tagId || ''}\nIMEI: ${d.imei || ''}`;
+        }
+        function generateSelectedBarcodes() {
+            const ids = getSelectedIds();
+            const assets = inventoryData.filter(d => ids.includes(String(d.id)));
+            if (!assets.length) { showToast('Select assets', 'Select one or more assets using the table checkboxes first.', 'error'); return; }
+            printAssetBarcodes(assets);
+        }
+        function generateFilteredBarcodes() {
+            const body = document.getElementById('inventoryTableBody');
+            const visibleIds = [...body.querySelectorAll('.row-checkbox')].map(cb => String(cb.value));
+            const assets = inventoryData.filter(d => visibleIds.includes(String(d.id)));
+            if (!assets.length) { showToast('No assets', 'No filtered assets are available to print.', 'error'); return; }
+            printAssetBarcodes(assets);
+        }
+        function printAssetBarcodes(assets) {
+            const width = Math.max(25, Math.min(100, Number(document.getElementById('barcodeWidth').value) || 50));
+            const height = Math.max(15, Math.min(80, Number(document.getElementById('barcodeHeight').value) || 30));
+            const win = window.open('', '_blank');
+            if (!win) { showToast('Popup blocked', 'Allow pop-ups to print QR labels.', 'error'); return; }
+            const labels = assets.map((d, i) => `<article class="label"><div class="qr" id="qr${i}"></div><div class="meta"><b>Tag ID: ${escapeBarcode(d.tagId || 'N/A')}</b><span>IMEI: ${escapeBarcode(d.imei || 'N/A')}</span></div></article>`).join('');
+            win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Asset QR Labels</title><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><style>@page{size:auto;margin:5mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;display:flex;flex-wrap:wrap;align-items:flex-start;gap:3mm}.label{width:${width}mm;height:${height}mm;border:0.2mm solid #bbb;padding:1.2mm;overflow:hidden;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:2mm;break-inside:avoid}.qr{flex:0 0 auto;display:flex;align-items:center;justify-content:center}.qr img,.qr canvas{width:min(${Math.max(12, Math.min(height - 4, width * 0.38))}mm,100%)!important;height:auto!important;max-height:${Math.max(10, height - 4)}mm}.meta{font-size:7pt;line-height:1.35;text-align:left;max-width:65%;overflow-wrap:anywhere}.meta span{display:block}</style></head><body>${labels}<script>window.onload=()=>{${assets.map((d,i)=>`try{new QRCode(document.getElementById('qr${i}'),{text:${JSON.stringify(barcodeAssetText(d))},width:128,height:128,correctLevel:QRCode.CorrectLevel.M});}catch(e){}`).join('')}setTimeout(()=>window.print(),500)};<\/script></body></html>`);
+            win.document.close();
+        }
+        function escapeBarcode(value) { return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+
         // --- Bulk Action Logic ---
         function toggleAllCheckboxes() {
             const master = document.getElementById('selectAllCheckbox');
@@ -1137,7 +1296,7 @@
             let updatedCount = 0;
             inventoryData = inventoryData.map(d => {
                 if (ids.includes(d.id)) {
-                    if(currentUser.role === 'admin' || d.location === currentUser.code) {
+                    if(['admin','superadmin'].includes(currentUser.role) || d.location === currentUser.code) {
                         updatedCount++;
                         return { ...d, status: newStatus, lastEditedBy: editor, lastEditedTime: timestamp };
                     }
@@ -1160,7 +1319,7 @@
                 let deletedCount = 0;
                 inventoryData = inventoryData.filter(d => {
                     if (ids.includes(d.id)) {
-                        if(currentUser.role === 'admin' || d.location === currentUser.code) {
+                        if(['admin','superadmin'].includes(currentUser.role) || d.location === currentUser.code) {
                             deletedCount++;
                             return false;
                         }
@@ -1231,6 +1390,7 @@
         }
 
         function openDeviceModal(id = null) {
+            if (currentUser && !['admin','superadmin','center'].includes(currentUser.role)) { showToast('Permission Restricted', 'You do not have permission to add or edit asset records.', 'error'); return; }
             const form = document.getElementById('deviceForm');
             form.reset();
             document.getElementById('deviceId').value = '';
@@ -1280,6 +1440,7 @@
 
         function saveDevice(e) {
             e.preventDefault();
+            if (currentUser && !['admin','superadmin','center'].includes(currentUser.role)) { showToast('Permission Restricted', 'You do not have permission to change inventory data.', 'error'); return; }
             const id = document.getElementById('deviceId').value;
             
             const timestamp = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
@@ -1295,6 +1456,7 @@
                 supplier: document.getElementById('supplier').value.trim(),
                 imei: document.getElementById('imei').value.trim(),
                 status: document.getElementById('status').value,
+                assetDate: (id && inventoryData.find(x => x.id === parseInt(id))?.assetDate) || new Date().toISOString().slice(0,10),
                 storage: document.getElementById('storage').value.trim(),
                 color: document.getElementById('color').value.trim(),
                 lastEditedBy: editor,
@@ -1317,9 +1479,10 @@
         }
 
         function editDevice(id) {
+            if (currentUser && !['admin','superadmin','center'].includes(currentUser.role)) { showToast('Permission Restricted', 'You do not have permission to edit inventory data.', 'error'); return; }
             const d = inventoryData.find(x => x.id === id);
             if (!d) return;
-            if(currentUser.role !== 'admin' && d.location !== currentUser.code) {
+            if(!['admin','superadmin'].includes(currentUser.role) && d.location !== currentUser.code) {
                 showToast('Access Denied', 'You lack permissions to edit records from other centers.', 'error');
                 return;
             }
@@ -1327,9 +1490,10 @@
         }
 
         function deleteDevice(id) {
+            if (currentUser && !['superadmin','admin','center'].includes(currentUser.role)) { showToast('Permission Restricted', 'You do not have permission to delete asset records.', 'error'); return; }
             const d = inventoryData.find(x => x.id === id);
             if (!d) return;
-            if(currentUser.role !== 'admin' && d.location !== currentUser.code) {
+            if(!['admin','superadmin'].includes(currentUser.role) && d.location !== currentUser.code) {
                 showToast('Access Denied', 'Cannot delete records outside your jurisdiction.', 'error');
                 return;
             }
@@ -1342,7 +1506,181 @@
             }
         }
 
+        // --- Asset Transit: all centers can initiate from their own inventory; Admin has global access ---
+        function transitTimestamp() {
+            return new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' });
+        }
+        function transitCenterOptions(includeAll=false) {
+            const codes = [...new Set([...centersData.filter(c => (c.code || '').toLowerCase() !== 'admin').map(c => c.code), ...inventoryData.map(d => d.location)].filter(Boolean))].sort();
+            return (includeAll ? '<option value="">All Centers</option>' : '') + codes.map(c => `<option value="${String(c).replace(/&/g,'&amp;').replace(/"/g,'&quot;')}">${String(c).replace(/</g,'&lt;')}</option>`).join('');
+        }
+        function populateTransitDropdowns() {
+            if (!currentUser) return;
+            const from = document.getElementById('transitFrom');
+            const to = document.getElementById('transitTo');
+            const filter = document.getElementById('transitFilterCenter');
+            if (!from || !to || !filter) return;
+            const oldFrom = from.value, oldTo = to.value, oldFilter = filter.value;
+            from.innerHTML = transitCenterOptions(); to.innerHTML = '<option value="">Select destination...</option>' + transitCenterOptions();
+            filter.innerHTML = transitCenterOptions(true);
+            if (!['admin','superadmin'].includes(currentUser.role)) { from.value = currentUser.code; from.disabled = true; } else { from.disabled = false; if (oldFrom) from.value = oldFrom; }
+            if (oldTo && [...to.options].some(o => o.value === oldTo)) to.value = oldTo;
+            if (oldFilter && [...filter.options].some(o => o.value === oldFilter)) filter.value = oldFilter;
+            refreshTransitAssets();
+        }
+        function refreshTransitAssets() {
+            const from = document.getElementById('transitFrom');
+            const asset = document.getElementById('transitAsset');
+            if (!from || !asset) return;
+            const old = asset.value, source = from.value;
+            const records = inventoryData.filter(d => d.location === source && (!d.transitStatus || d.transitStatus === 'Received' || d.transitStatus === 'Cancelled'));
+            asset.innerHTML = '<option value="">Select asset...</option>' + records.map(d => `<option value="${d.id}">${String(d.tagId || 'No Tag').replace(/</g,'&lt;')} — ${String(d.modelName || '').replace(/</g,'&lt;')} — IMEI ${String(d.imei || '').replace(/</g,'&lt;')}</option>`).join('');
+            if (old && records.some(d => String(d.id) === old)) asset.value = old;
+        }
+        function saveTransit(e) {
+            e.preventDefault();
+            if (!currentUser) return;
+            const id = Number(document.getElementById('transitAsset').value);
+            const d = inventoryData.find(x => Number(x.id) === id);
+            const from = document.getElementById('transitFrom').value;
+            const to = document.getElementById('transitTo').value;
+            const status = document.getElementById('transitStatus').value;
+            const note = document.getElementById('transitNote').value.trim();
+            if (!d) { showToast('Select Asset', 'Choose a valid asset to transfer.', 'error'); return; }
+            if (from === to) { showToast('Invalid Transfer', 'Source and destination centers must be different.', 'error'); return; }
+            if (!['admin','superadmin'].includes(currentUser.role) && (from !== currentUser.code || d.location !== currentUser.code)) { showToast('Access Denied', 'You can only transfer assets currently assigned to your center.', 'error'); return; }
+            if (status === 'Received' && currentUser.role !== 'admin' && currentUser.code !== to) { showToast('Access Denied', 'Only the destination center can confirm receipt.', 'error'); return; }
+            if (status === 'Received' && !d.transitStatus && currentUser.role !== 'admin' && currentUser.code !== to) { showToast('No Transfer', 'This asset has no incoming transfer for your center.', 'error'); return; }
+            if (status === 'Received') {
+                if (d.transitStatus !== 'In Transit' || d.transitTo !== currentUser.code && currentUser.role !== 'admin') { showToast('Cannot Receive', 'Only the destination center (or Admin) can receive an asset currently in transit to that center.', 'error'); return; }
+                d.location = d.transitTo;
+                d.status = d.transitPreviousStatus || 'Active';
+                d.transitStatus = 'Received'; d.receivedDate = transitTimestamp();
+            } else if (status === 'In Transit') {
+                if (d.transitStatus === 'In Transit') { showToast('Already In Transit', 'This asset already has a pending transfer.', 'error'); return; }
+                d.transitPreviousStatus = d.status || 'Active';
+                d.transitFrom = from; d.transitTo = to; d.transitStatus = 'In Transit';
+                d.transitDate = transitTimestamp(); d.receivedDate = ''; d.transitNote = note;
+                d.status = 'In Transit';
+            } else {
+                if (d.transitStatus !== 'In Transit') { showToast('No Pending Transfer', 'There is no active transfer to cancel.', 'error'); return; }
+                if (currentUser.role !== 'admin' && currentUser.code !== d.transitFrom) { showToast('Access Denied', 'Only source center or Admin can cancel this transfer.', 'error'); return; }
+                d.location = d.transitFrom; d.status = d.transitPreviousStatus || 'Active'; d.transitStatus = 'Cancelled'; d.receivedDate = '';
+                d.transitNote = note || d.transitNote || '';
+            }
+            d.transitNote = note || d.transitNote || '';
+            d.lastEditedBy = `${currentUser.name || currentUser.code || 'Admin'} (${currentUser.code || 'admin'})`;
+            d.lastEditedTime = transitTimestamp();
+            saveToLocal(); pushToGAS();
+            document.getElementById('transitForm').reset();
+            populateTransitDropdowns(); renderTransitTable();
+            showToast('Transfer Updated', status === 'Received' ? `Asset received at ${d.location}. Source assignment has been replaced.` : `Transfer status: ${status}.`, 'success');
+        }
+        function receiveTransitAsset(id) {
+            const d = inventoryData.find(x => Number(x.id) === Number(id));
+            if (!d || d.transitStatus !== 'In Transit') return;
+            if (currentUser.role !== 'admin' && currentUser.code !== d.transitTo) { showToast('Access Denied', 'Only the destination center can receive this asset.', 'error'); return; }
+            d.location = d.transitTo; d.status = d.transitPreviousStatus || 'Active'; d.transitStatus = 'Received'; d.receivedDate = transitTimestamp();
+            d.lastEditedBy = `${currentUser.name || currentUser.code || 'Admin'} (${currentUser.code || 'admin'})`; d.lastEditedTime = transitTimestamp();
+            saveToLocal(); pushToGAS(); populateTransitDropdowns(); renderTransitTable();
+            showToast('Received', `Asset ${d.tagId} is now assigned to ${d.location}.`, 'success');
+        }
+        function renderTransitTable() {
+            const body = document.getElementById('transitTableBody'); if (!body || !currentUser) return;
+            const q = (document.getElementById('transitSearch')?.value || '').toLowerCase();
+            const status = document.getElementById('transitFilterStatus')?.value || '';
+            const center = document.getElementById('transitFilterCenter')?.value || '';
+            const records = inventoryData.filter(d => d.transitStatus && (currentUser.role === 'admin' || d.transitFrom === currentUser.code || d.transitTo === currentUser.code || d.location === currentUser.code))
+                .filter(d => (!status || d.transitStatus === status) && (!center || d.transitFrom === center || d.transitTo === center || d.location === center))
+                .filter(d => !q || [d.tagId,d.imei,d.modelName,d.transitFrom,d.transitTo,d.transitNote].some(v => String(v || '').toLowerCase().includes(q)))
+                .sort((a,b) => String(b.transitDate || '').localeCompare(String(a.transitDate || '')));
+            body.innerHTML = '';
+            records.forEach(d => {
+                const tr = document.createElement('tr');
+                const canReceive = d.transitStatus === 'In Transit' && (currentUser.role === 'admin' || currentUser.code === d.transitTo);
+                const safe = v => String(v || '—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                tr.innerHTML = `<td class="py-3 px-4 font-mono">${safe(d.tagId)}</td><td class="py-3 px-4 font-mono">${safe(d.imei)}</td><td class="py-3 px-4">${safe(d.transitFrom)}</td><td class="py-3 px-4">${safe(d.transitTo)}</td><td class="py-3 px-4"><span class="px-2 py-1 rounded-lg ${d.transitStatus==='Received'?'bg-emerald-500/20 text-emerald-300':d.transitStatus==='In Transit'?'bg-amber-500/20 text-amber-300':'bg-slate-700 text-slate-300'}">${safe(d.transitStatus)}</span></td><td class="py-3 px-4">${safe(d.transitDate)}</td><td class="py-3 px-4">${safe(d.receivedDate)}</td><td class="py-3 px-4">${safe(d.transitNote)}</td><td class="py-3 px-4">${canReceive ? `<button onclick="receiveTransitAsset(${Number(d.id)})" class="px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500 hover:text-white">Confirm Received</button>` : '—'}</td>`;
+                body.appendChild(tr);
+            });
+            document.getElementById('transitEmpty').classList.toggle('hidden', records.length !== 0);
+        }
+
         // --- 7.5 Centers CRUD Module ---
+        // --- Admin Redundancy Scan: duplicates are flagged, never auto-deleted ---
+        function normalizedDuplicateValue(value) {
+            return String(value ?? '').trim().toUpperCase().replace(/\\s+/g, '');
+        }
+
+        function getRedundancyGroups(sourceData = inventoryData) {
+            const groups = [];
+            [
+                { key: 'tagId', label: 'Duplicate Tag ID', get: d => d.tagId },
+                { key: 'imei', label: 'Duplicate IMEI', get: d => d.imei }
+            ].forEach(rule => {
+                const buckets = new Map();
+                sourceData.forEach(d => {
+                    const value = normalizedDuplicateValue(rule.get(d));
+                    if (!value) return;
+                    if (!buckets.has(value)) buckets.set(value, []);
+                    buckets.get(value).push(d);
+                });
+                buckets.forEach((records, value) => {
+                    if (records.length > 1) groups.push({ key: rule.key, label: rule.label, value, records });
+                });
+            });
+            return groups;
+        }
+
+        function renderRedundancy() {
+            if (!currentUser) return;
+            const body = document.getElementById('redundancyTableBody');
+            if (!body) return;
+            const sourceData = ['admin','superadmin'].includes(currentUser.role) ? inventoryData : inventoryData.filter(d => d.location === currentUser.code);
+            const groups = getRedundancyGroups(sourceData);
+            const flaggedIds = new Set();
+            groups.forEach(g => g.records.forEach(d => flaggedIds.add(d.id)));
+            document.getElementById('redundancyGroups').textContent = groups.length;
+            document.getElementById('redundancyRecords').textContent = flaggedIds.size;
+            document.getElementById('redundancyUnique').textContent = Math.max(0, sourceData.length - flaggedIds.size);
+
+            const centerSelect = document.getElementById('redundancyCenter');
+            const selectedCenter = ['admin','superadmin'].includes(currentUser.role) ? centerSelect.value : currentUser.code;
+            const centerOptions = '<option value="">All Centers</option>' +
+                [...new Set(inventoryData.map(d => d.location).filter(Boolean))].sort().map(c =>
+                    `<option value="${String(c).replace(/&/g, '&amp;').replace(/"/g, '&quot;')}">${String(c).replace(/</g, '&lt;')}</option>`
+                ).join('');
+            if (centerSelect.dataset.ready !== '1') {
+                centerSelect.innerHTML = centerOptions;
+                centerSelect.dataset.ready = '1';
+            }
+            if (!['admin','superadmin'].includes(currentUser.role)) { centerSelect.value = currentUser.code; centerSelect.disabled = true; }
+            else { centerSelect.disabled = false; if (selectedCenter && [...centerSelect.options].some(o => o.value === selectedCenter)) centerSelect.value = selectedCenter; }
+
+            const type = document.getElementById('redundancyType').value;
+            const search = document.getElementById('redundancySearch').value.trim().toLowerCase();
+            const center = centerSelect.value;
+            const rows = [];
+            groups.filter(g => type === 'all' || g.key === type).forEach(g => {
+                g.records.filter(d => (!center || d.location === center) &&
+                    (!search || [d.tagId, d.imei, d.modelName, d.location, d.projectName].some(v => String(v || '').toLowerCase().includes(search))))
+                    .forEach(d => rows.push({ group: g, device: d }));
+            });
+            body.innerHTML = '';
+            rows.forEach(({group, device:d}) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-800/60';
+                const safe = v => String(v ?? '-').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                tr.innerHTML = `<td class="py-3 px-4 text-amber-300">${safe(group.label)}</td>
+                    <td class="py-3 px-4 font-mono text-rose-300">${safe(group.value)}</td>
+                    <td class="py-3 px-4">${safe(d.tagId)}</td><td class="py-3 px-4">${safe(d.location)}</td>
+                    <td class="py-3 px-4">${safe(d.modelName)}</td><td class="py-3 px-4 font-mono">${safe(d.imei)}</td>
+                    <td class="py-3 px-4">${safe(d.status)}</td>
+                    <td class="py-3 px-4"><button onclick="editDevice(${Number(d.id)})" class="px-3 py-1.5 rounded-lg bg-primary/20 text-indigo-300 hover:bg-primary hover:text-white">Review / Edit</button></td>`;
+                body.appendChild(tr);
+            });
+            document.getElementById('redundancyEmpty').classList.toggle('hidden', rows.length !== 0);
+        }
+
         function renderCentersTable() {
             const tbody = document.getElementById('centersTableBody');
             if(!tbody) return;
@@ -1366,6 +1704,7 @@
         }
 
         function openCenterModal(code = null) {
+            if (!currentUser || !['superadmin','admin'].includes(currentUser.role)) { showToast('Permission Restricted', 'Only Admin or Super Admin can manage centers.', 'error'); return; }
             const form = document.getElementById('centerForm');
             form.reset();
             document.getElementById('editCenterId').value = '';
@@ -1400,6 +1739,7 @@
 
         function saveCenter(e) {
             e.preventDefault();
+            if (!currentUser || !['superadmin','admin'].includes(currentUser.role)) { showToast('Permission Restricted', 'Only Admin or Super Admin can modify center data.', 'error'); return; }
             const editCode = document.getElementById('editCenterId').value;
             const code = document.getElementById('centerCode').value.trim().toUpperCase();
             const name = document.getElementById('centerName').value.trim();
@@ -1432,6 +1772,7 @@
         }
 
         function deleteCenter(code) {
+            if (!currentUser || !['superadmin','admin'].includes(currentUser.role)) { showToast('Permission Restricted', 'Only Admin or Super Admin can delete centers.', 'error'); return; }
             if (confirm(`CRITICAL: Remove access and center profile for ${code}? Devices mapped to this center will remain in the database.`)) {
                 centersData = centersData.filter(x => x.code !== code);
                 populateCenterDropdowns();
@@ -1521,7 +1862,13 @@
                         storage: row['Storage'] || '',
                         color: row['Mobile Color'] || row['color'] || '',
                         lastEditedBy: row['Last Edited By'] || row['lastEditedBy'] || '',
-                        lastEditedTime: row['Last Edited Time'] || row['lastEditedTime'] || ''
+                        lastEditedTime: row['Last Edited Time'] || row['lastEditedTime'] || '',
+                        transitStatus: row['Transit Status'] || row['transitStatus'] || '',
+                        transitFrom: row['Transit From'] || row['transitFrom'] || '',
+                        transitTo: row['Transit To'] || row['transitTo'] || '',
+                        transitDate: row['Transit Date'] || row['transitDate'] || '',
+                        receivedDate: row['Received Date'] || row['receivedDate'] || '',
+                        transitNote: row['Transit Remarks'] || row['transitNote'] || ''
                     }));
                     saveToLocal();
                     if (document.getElementById('view-inventory').classList.contains('flex')) renderTable();
@@ -1538,6 +1885,7 @@
         }
 
         async function pushToGAS() {
+            if (!currentUser || !['superadmin','admin','center'].includes(currentUser.role)) { showToast('Permission Restricted', 'You do not have permission to write cloud data.', 'error'); return; }
             logSync('Transmitting data to GAS...');
             document.getElementById('globalLoader').classList.remove('hidden');
             document.getElementById('globalLoader').classList.add('flex');
@@ -1547,7 +1895,10 @@
                 'Supplier': d.supplier || '', 'IMEI 1': d.imei || '', 'Storage': d.storage || '', 
                 'Mobile Color': d.color || '', 'Device Status': d.status || '',
                 'Last Edited By': d.lastEditedBy || '',
-                'Last Edited Time': d.lastEditedTime || ''
+                'Last Edited Time': d.lastEditedTime || '',
+                'Transit Status': d.transitStatus || '', 'Transit From': d.transitFrom || '',
+                'Transit To': d.transitTo || '', 'Transit Date': d.transitDate || '',
+                'Received Date': d.receivedDate || '', 'Transit Remarks': d.transitNote || ''
             }));
 
             try {
@@ -1585,6 +1936,7 @@
         }
 
         function handleFile(file) {
+            if (!currentUser || currentUser.role !== 'superadmin') { showToast('Permission Restricted', 'Only Super Admin can import or overwrite data.', 'error'); return; }
             logSync(`Reading ${file.name}...`);
             const reader = new FileReader();
             reader.onload = (e) => {
