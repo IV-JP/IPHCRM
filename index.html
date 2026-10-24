@@ -1,1 +1,1349 @@
 
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Asset CRM | Comprehensive Platform</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS for Excel Import/Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { primary: '#6366f1', secondary: '#14b8a6', dark: '#0f172a', dark_card: '#1e293b' }
+                }
+            }
+        };
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
+        .nav-item.active { background-color: rgba(99, 102, 241, 0.15); color: #818cf8; border-right: 3px solid #818cf8; }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        
+        /* Drag and Drop Zone Styles */
+        .drop-zone { border: 2px dashed #475569; transition: all 0.3s ease; }
+        .drop-zone.dragover { border-color: #6366f1; background-color: rgba(99, 102, 241, 0.1); }
+    </style>
+</head>
+<body class="h-screen w-full overflow-hidden flex flex-col md:flex-row antialiased">
+
+    <!-- NOTIFICATION TOAST -->
+    <div id="toast" class="fixed top-5 right-5 z-[100] transform translate-x-full transition-transform duration-300 bg-slate-800 border-l-4 border-primary text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 min-w-[300px]">
+        <i id="toastIcon" class="fas fa-info-circle text-xl"></i>
+        <div>
+            <h4 id="toastTitle" class="font-bold text-sm">Notification</h4>
+            <p id="toastMsg" class="text-xs text-slate-300 mt-0.5">System message</p>
+        </div>
+    </div>
+
+    <!-- 1. LOGIN SCREEN -->
+    <div id="loginScreen" class="fixed inset-0 z-50 bg-[#0b1120] flex flex-col items-center justify-center p-4">
+        <div class="glass-panel p-10 rounded-2xl w-full max-w-md shadow-2xl border border-slate-700 relative overflow-hidden">
+            <!-- Decorative blur -->
+            <div class="absolute top-0 left-0 w-full h-32 bg-primary/20 blur-[50px] -z-10 rounded-full transform -translate-y-1/2"></div>
+            
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-gradient-to-br from-primary to-indigo-700 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-lg shadow-primary/30">
+                    <i class="fas fa-satellite-dish"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-white tracking-tight">Comprehensive CRM</h1>
+                <p class="text-slate-400 text-sm mt-2">Mobile Device Asset Inventory</p>
+            </div>
+            
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Username / Center Code</label>
+                    <div class="relative">
+                        <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                        <input type="text" id="username" required placeholder="admin or YGR, RCR..." class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 pl-10 pr-4 text-white placeholder-slate-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Password</label>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                        <input type="password" id="password" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 pl-10 pr-4 text-white placeholder-slate-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all">
+                    </div>
+                </div>
+                <button type="submit" id="loginBtn" class="w-full bg-gradient-to-r from-primary to-indigo-600 hover:from-indigo-500 hover:to-primary text-white font-bold py-3.5 rounded-xl shadow-lg shadow-primary/30 transition-all flex justify-center items-center gap-2 mt-4">
+                    <span>Secure Access</span> <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+            
+            <div class="mt-8 pt-6 border-t border-slate-700/50 text-center text-xs text-slate-500 flex justify-between">
+                <div><span class="block text-slate-400 font-semibold mb-1">Global Admin</span><code>admin</code> / <code>admin123</code></div>
+                <div><span class="block text-slate-400 font-semibold mb-1">Center Portal</span><code>YGR</code> / <code>YGR123</code></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. MAIN APP CONTAINER -->
+    <div id="appContainer" class="flex h-full w-full hidden">
+        
+        <!-- SIDEBAR -->
+        <aside class="w-64 glass-panel border-r border-slate-800 flex flex-col hidden md:flex h-full flex-shrink-0 z-20 bg-[#0f172a]/90">
+            <div class="p-6 border-b border-slate-800 flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-primary to-indigo-700 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/30">
+                    <i class="fas fa-satellite-dish"></i>
+                </div>
+                <div>
+                    <h2 class="font-bold text-white tracking-tight">Comp CRM</h2>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold" id="sidebarRoleLabel">Admin</p>
+                </div>
+            </div>
+            
+            <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 px-4">Main Menu</p>
+                <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-item active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800 transition-all text-left">
+                    <i class="fas fa-chart-pie w-5 text-center"></i> Dashboard
+                </button>
+                <button onclick="switchView('inventory')" id="nav-inventory" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800 transition-all text-left">
+                    <i class="fas fa-boxes w-5 text-center"></i> Master Inventory
+                </button>
+                <button onclick="switchView('integrations')" id="nav-integrations" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800 transition-all text-left">
+                    <i class="fas fa-plug w-5 text-center"></i> Integration Hub
+                </button>
+                <button onclick="switchView('centers')" id="nav-centers" class="nav-item hidden w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-slate-800 transition-all text-left">
+                    <i class="fas fa-building w-5 text-center"></i> Center Management
+                </button>
+            </nav>
+            
+            <div class="p-4 border-t border-slate-800">
+                <div class="flex items-center gap-3 mb-4 px-2 bg-slate-800/50 p-3 rounded-xl">
+                    <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-slate-300">
+                        <i class="fas fa-user-astronaut"></i>
+                    </div>
+                    <div class="flex-1 overflow-hidden">
+                        <p class="text-sm font-bold text-white truncate" id="currentUserDisplay">Admin User</p>
+                        <p class="text-xs text-secondary truncate font-medium" id="currentLocationDisplay">Global View</p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-rose-400 hover:bg-rose-500 hover:text-white border border-rose-500/20 transition-all shadow-sm">
+                    <i class="fas fa-sign-out-alt"></i> Terminate Session
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 flex flex-col h-full bg-[#0b1120] overflow-hidden relative">
+            
+            <!-- Mobile Header -->
+            <header class="md:hidden glass-panel p-4 flex items-center justify-between border-b border-slate-800 z-20">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-satellite-dish text-primary"></i>
+                    <span class="font-bold text-white">Comp CRM</span>
+                </div>
+                <button onclick="toggleMobileMenu()" class="text-slate-300 p-2 focus:outline-none">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </header>
+
+            <!-- SCROLLABLE VIEWS -->
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth" id="mainScrollArea">
+                
+                <!-- 1. DASHBOARD VIEW -->
+                <div id="view-dashboard" class="view-section">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                        <div>
+                            <h1 class="text-3xl font-bold text-white tracking-tight">Analytics Dashboard</h1>
+                            <p class="text-slate-400 text-sm mt-1" id="dashboardSubtitle">Real-time overview of IT asset infrastructure</p>
+                        </div>
+                        <div class="bg-slate-800/80 px-4 py-2 rounded-lg text-sm font-medium border border-slate-700 flex items-center gap-2 text-slate-300">
+                            <i class="fas fa-clock text-primary"></i> Last synced: <span id="lastSyncTime">Just now</span>
+                        </div>
+                    </div>
+                    
+                    <!-- KPI Cards Row 1 -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                        <div class="glass-panel p-5 rounded-2xl border border-slate-700 relative overflow-hidden group hover:border-primary/50 transition-colors">
+                            <div class="absolute -right-4 -top-4 w-16 h-16 bg-blue-500/10 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                            <div class="flex justify-between items-start relative z-10">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Devices</p>
+                                    <h3 class="text-3xl font-black text-white mt-1" id="kpi-total">0</h3>
+                                </div>
+                                <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center"><i class="fas fa-server"></i></div>
+                            </div>
+                        </div>
+                        <div class="glass-panel p-5 rounded-2xl border border-slate-700 relative overflow-hidden group hover:border-emerald-500/50 transition-colors">
+                            <div class="absolute -right-4 -top-4 w-16 h-16 bg-emerald-500/10 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                            <div class="flex justify-between items-start relative z-10">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active</p>
+                                    <h3 class="text-3xl font-black text-emerald-400 mt-1" id="kpi-active">0</h3>
+                                </div>
+                                <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center"><i class="fas fa-check-circle"></i></div>
+                            </div>
+                        </div>
+                        <div class="glass-panel p-5 rounded-2xl border border-slate-700 relative overflow-hidden group hover:border-rose-500/50 transition-colors">
+                            <div class="absolute -right-4 -top-4 w-16 h-16 bg-rose-500/10 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                            <div class="flex justify-between items-start relative z-10">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Faulty/Damaged</p>
+                                    <h3 class="text-3xl font-black text-rose-400 mt-1" id="kpi-faulty">0</h3>
+                                </div>
+                                <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center"><i class="fas fa-tools"></i></div>
+                            </div>
+                        </div>
+                        <div class="glass-panel p-5 rounded-2xl border border-slate-700 relative overflow-hidden group hover:border-purple-500/50 transition-colors">
+                            <div class="flex justify-between items-start relative z-10">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pro Models</p>
+                                    <h3 class="text-3xl font-black text-purple-400 mt-1" id="kpi-pro">0</h3>
+                                </div>
+                                <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center"><i class="fas fa-star"></i></div>
+                            </div>
+                        </div>
+                        <div class="glass-panel p-5 rounded-2xl border border-slate-700 relative overflow-hidden group hover:border-slate-400/50 transition-colors">
+                            <div class="flex justify-between items-start relative z-10">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Non-Pro Models</p>
+                                    <h3 class="text-3xl font-black text-slate-300 mt-1" id="kpi-nonpro">0</h3>
+                                </div>
+                                <div class="w-10 h-10 rounded-xl bg-slate-700 text-slate-300 flex items-center justify-center"><i class="fas fa-mobile"></i></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <div class="glass-panel p-6 rounded-2xl border border-slate-700 flex flex-col shadow-xl">
+                            <h3 class="text-base font-bold text-white mb-6 flex items-center gap-2"><i class="fas fa-map-marker-alt text-primary"></i> <span id="barChartTitle">Center-Wise Distribution</span></h3>
+                            <div class="flex-1 relative min-h-[300px] w-full">
+                                <canvas id="centerChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="glass-panel p-6 rounded-2xl border border-slate-700 flex flex-col shadow-xl">
+                            <h3 class="text-base font-bold text-white mb-6 flex items-center gap-2"><i class="fas fa-apple-alt text-primary"></i> Model Distribution</h3>
+                            <div class="flex-1 relative min-h-[300px] w-full flex justify-center">
+                                <canvas id="modelChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. INVENTORY CRUD VIEW -->
+                <div id="view-inventory" class="view-section hidden flex flex-col h-full min-h-[calc(100vh-6rem)]">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                        <div>
+                            <h1 class="text-3xl font-bold text-white tracking-tight">Master Inventory</h1>
+                            <p class="text-slate-400 text-sm mt-1">Search, modify, and track all mobile assets.</p>
+                        </div>
+                        <button onclick="openDeviceModal()" class="bg-gradient-to-r from-primary to-indigo-600 hover:from-indigo-500 hover:to-primary text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-primary/30 flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95">
+                            <i class="fas fa-plus"></i> Add New Device
+                        </button>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl border border-slate-700 overflow-hidden flex flex-col flex-1 shadow-2xl">
+                        <!-- Toolbar -->
+                        <div class="p-4 border-b border-slate-700 bg-slate-800/80 flex flex-col sm:flex-row gap-4 items-center">
+                            <div class="relative w-full sm:w-1/3">
+                                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                                <input type="text" id="searchInput" oninput="renderTable()" placeholder="Search IMEI, Tag ID, Model..." class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all">
+                            </div>
+                            
+                            <div class="flex w-full sm:w-auto gap-3 ml-auto">
+                                <select id="filterStatus" onchange="renderTable()" class="bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-4 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer">
+                                    <option value="">All Statuses</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Faulty">Faulty</option>
+                                </select>
+                                <select id="filterCenter" onchange="renderTable()" class="bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-4 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer hidden">
+                                    <!-- Populated dynamically if admin -->
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Table Wrapper -->
+                        <div class="flex-1 overflow-auto bg-[#0b1120]/50 relative">
+                            <table class="w-full text-left text-sm whitespace-nowrap">
+                                <thead class="bg-slate-900 text-slate-400 sticky top-0 z-10 shadow-md">
+                                    <tr>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest cursor-pointer hover:text-white" onclick="sortTable('sNo')">S No <i class="fas fa-sort ml-1 opacity-50"></i></th>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Tag ID</th>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Center</th>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Model Name</th>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Project</th>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">IMEI</th>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Color</th>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Status</th>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventoryTableBody" class="divide-y divide-slate-800/60">
+                                    <!-- Rows rendered via JS -->
+                                </tbody>
+                            </table>
+                            
+                            <!-- Empty State -->
+                            <div id="emptyState" class="hidden absolute inset-0 flex-col items-center justify-center text-slate-500 bg-[#0b1120]/80 backdrop-blur-sm z-0">
+                                <div class="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                                    <i class="fas fa-box-open text-3xl"></i>
+                                </div>
+                                <h3 class="text-white font-bold text-lg">No Devices Found</h3>
+                                <p class="text-sm mt-1">Try adjusting your search or filters.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Footer -->
+                        <div class="p-3 border-t border-slate-700 bg-slate-900 text-xs font-semibold text-slate-400 flex justify-between items-center">
+                            <span id="recordCountDisplay" class="bg-slate-800 px-3 py-1 rounded-full">Showing 0 records</span>
+                            <span class="text-[10px] uppercase tracking-widest flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> Local Database Connected</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.5 CENTER MANAGEMENT VIEW (ADMIN ONLY) -->
+                <div id="view-centers" class="view-section hidden flex-col h-full min-h-[calc(100vh-6rem)]">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                        <div>
+                            <h1 class="text-3xl font-bold text-white tracking-tight">Center Management</h1>
+                            <p class="text-slate-400 text-sm mt-1">Add, edit, or remove regional centers and access credentials.</p>
+                        </div>
+                        <button onclick="openCenterModal()" class="bg-gradient-to-r from-secondary to-teal-600 hover:from-teal-500 hover:to-secondary text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-secondary/30 flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95">
+                            <i class="fas fa-plus"></i> Add New Center
+                        </button>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl border border-slate-700 overflow-hidden flex flex-col flex-1 shadow-2xl">
+                        <div class="flex-1 overflow-auto bg-[#0b1120]/50 relative">
+                            <table class="w-full text-left text-sm whitespace-nowrap">
+                                <thead class="bg-slate-900 text-slate-400 sticky top-0 z-10 shadow-md">
+                                    <tr>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Center Code</th>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Center Name</th>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest">Login Password</th>
+                                        <th class="py-4 px-5 font-bold uppercase text-[10px] tracking-widest text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="centersTableBody" class="divide-y divide-slate-800/60">
+                                    <!-- Rows rendered via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. INTEGRATION HUB VIEW -->
+                <div id="view-integrations" class="view-section hidden">
+                    <h1 class="text-3xl font-bold text-white tracking-tight mb-1">Integration Hub</h1>
+                    <p class="text-slate-400 text-sm mb-8">Import/Export Excel files directly and synchronize with Google Sheets.</p>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        
+                        <!-- Panel A: Excel File Operations -->
+                        <div class="glass-panel p-8 rounded-2xl border border-slate-700 shadow-xl flex flex-col">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-xl flex items-center justify-center text-xl">
+                                    <i class="fas fa-file-excel"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-bold text-white">Excel Import / Export</h2>
+                                    <p class="text-xs text-slate-400 mt-1">Operates locally via SheetJS in browser</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Drag & Drop Zone -->
+                            <div id="dropZone" class="drop-zone flex-1 rounded-xl flex flex-col items-center justify-center p-8 mb-6 cursor-pointer bg-slate-900/50 hover:bg-slate-800/50">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-slate-500 mb-4"></i>
+                                <p class="text-white font-medium text-center">Drag & Drop <br><span class="text-primary">'All-In-One_Mobile Device_Inventory_2.xlsx'</span></p>
+                                <p class="text-xs text-slate-400 mt-2 text-center">or click to browse local files</p>
+                                <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv">
+                            </div>
+                            
+                            <button onclick="exportToExcel()" class="w-full bg-slate-800 hover:bg-emerald-600 text-white font-bold py-3.5 rounded-xl border border-slate-700 transition-all flex items-center justify-center gap-2">
+                                <i class="fas fa-download"></i> Download Export as .xlsx
+                            </button>
+                        </div>
+
+                        <!-- Panel B: Google Apps Script API -->
+                        <div class="glass-panel p-8 rounded-2xl border border-slate-700 shadow-xl flex flex-col">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-12 h-12 bg-blue-500/20 text-blue-400 rounded-xl flex items-center justify-center text-xl">
+                                    <i class="fab fa-google"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-bold text-white">Google Sheets Sync</h2>
+                                    <p class="text-xs text-slate-400 mt-1">Cloud synchronization via Apps Script Web App</p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-5 flex-1">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Web App URL Endpoint</label>
+                                    <div class="flex gap-2">
+                                        <input type="url" id="gasUrlInput" readonly value="https://script.google.com/macros/s/AKfycbzgHPKEZS2aef-EtiI0Gb_WideYUcC5ae1pisdyZ7xbgHGDX7xOTMYsoHaAEm6VOO6AdQ/exec" class="flex-1 bg-slate-800 border border-slate-700 rounded-xl py-3 px-4 text-sm text-slate-400 focus:outline-none font-mono cursor-not-allowed">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4 mt-6">
+                                    <button onclick="pullFromGAS()" class="bg-slate-800 hover:bg-blue-600 text-white font-bold py-5 rounded-xl border border-slate-700 transition-all flex flex-col items-center justify-center gap-2 group">
+                                        <i class="fas fa-cloud-download-alt text-2xl text-slate-400 group-hover:text-white transition-colors"></i>
+                                        <span>Fetch Data</span>
+                                    </button>
+                                    <button onclick="pushToGAS()" class="bg-slate-800 hover:bg-primary text-white font-bold py-5 rounded-xl border border-slate-700 transition-all flex flex-col items-center justify-center gap-2 group">
+                                        <i class="fas fa-cloud-upload-alt text-2xl text-slate-400 group-hover:text-white transition-colors"></i>
+                                        <span>Push/Sync Data</span>
+                                    </button>
+                                </div>
+                                
+                                <!-- Console Log -->
+                                <div class="bg-black/60 rounded-xl p-4 text-[11px] font-mono text-emerald-400 overflow-hidden h-32 overflow-y-auto mt-4 border border-slate-800 shadow-inner leading-relaxed" id="syncConsole">
+                                    [SYSTEM] Integration Hub Initialized.<br>
+                                    [SYSTEM] Ready for operations.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ADD/EDIT DEVICE MODAL -->
+    <div id="deviceModal" class="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-[#1e293b] border border-slate-700 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-200" id="modalContent">
+            
+            <div class="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2" id="modalTitle"><i class="fas fa-edit text-primary"></i> Add New Asset</h3>
+                <button onclick="closeDeviceModal()" class="text-slate-400 hover:text-white hover:bg-slate-700 w-8 h-8 rounded-full flex items-center justify-center transition-colors">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <form id="deviceForm" onsubmit="saveDevice(event)" class="p-6">
+                <input type="hidden" id="deviceId">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">S No.</label>
+                        <input type="number" id="sNo" required class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 px-3 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Tag ID</label>
+                        <input type="text" id="tagId" required placeholder="IV-RCR-IPH-001" class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 px-3 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary font-mono">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Center Location</label>
+                        <select id="location" required class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 px-3 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary appearance-none">
+                            <!-- Populated dynamically via JS -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Project Name</label>
+                        <input type="text" id="projectName" required placeholder="e.g., Mecka, Trace" class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 px-3 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Model Name</label>
+                        <input type="text" id="modelName" required placeholder="iPhone 13, iPhone 14 Pro..." class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 px-3 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Supplier</label>
+                        <input type="text" id="supplier" placeholder="Ovantica, Grest..." class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 px-3 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">IMEI Number</label>
+                        <input type="text" id="imei" required placeholder="3509204..." class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 px-3 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary font-mono text-primary">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Status</label>
+                        <select id="status" required class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 px-3 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary appearance-none">
+                            <option value="Active">Active</option>
+                            <option value="Faulty">Faulty</option>
+                            <option value="In Repair">In Repair</option>
+                            <option value="Missing">Missing</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Storage</label>
+                        <input type="text" id="storage" placeholder="128 GB, 256 GB" class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 px-3 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Mobile Color</label>
+                        <input type="text" id="color" placeholder="Blue, Graphite..." class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 px-3 text-sm text-white focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
+                    </div>
+                </div>
+                
+                <div class="pt-6 flex justify-end gap-3 border-t border-slate-700/80">
+                    <button type="button" onclick="closeDeviceModal()" class="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-700 transition-colors">Cancel</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl text-sm font-bold bg-primary hover:bg-indigo-500 text-white shadow-lg shadow-primary/20 transition-all flex items-center gap-2">
+                        <i class="fas fa-save"></i> Save Asset
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ADD/EDIT CENTER MODAL -->
+    <div id="centerModal" class="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-[#1e293b] border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden transform scale-95 transition-transform duration-200" id="centerModalContent">
+            
+            <div class="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2" id="centerModalTitle"><i class="fas fa-building text-secondary"></i> Add New Center</h3>
+                <button onclick="closeCenterModal()" class="text-slate-400 hover:text-white hover:bg-slate-700 w-8 h-8 rounded-full flex items-center justify-center transition-colors">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <form id="centerForm" onsubmit="saveCenter(event)" class="p-6">
+                <input type="hidden" id="editCenterId">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Center Code (Unique)</label>
+                        <input type="text" id="centerCode" required placeholder="e.g., NEW" class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 px-3 text-sm text-white focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary uppercase">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Center Name</label>
+                        <input type="text" id="centerName" required placeholder="e.g., New City" class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 px-3 text-sm text-white focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Login Password</label>
+                        <input type="text" id="centerPassword" required placeholder="e.g., NEW123" class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 px-3 text-sm text-white focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary">
+                    </div>
+                </div>
+                
+                <div class="pt-6 mt-4 flex justify-end gap-3 border-t border-slate-700/80">
+                    <button type="button" onclick="closeCenterModal()" class="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-300 hover:bg-slate-700 transition-colors">Cancel</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl text-sm font-bold bg-secondary hover:bg-teal-500 text-white shadow-lg shadow-secondary/20 transition-all flex items-center gap-2">
+                        <i class="fas fa-save"></i> Save Center
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- CORE JAVASCRIPT LOGIC                      -->
+    <!-- ========================================== -->
+    <script>
+        // --- 1. Global State & Settings ---
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbzgHPKEZS2aef-EtiI0Gb_WideYUcC5ae1pisdyZ7xbgHGDX7xOTMYsoHaAEm6VOO6AdQ/exec';
+        let centersData = [];
+        let currentUser = null; 
+        let inventoryData = []; 
+        let currentSort = { col: 'sNo', dir: 'asc' };
+        
+        // Chart objects
+        let centerChartInst = null;
+        let modelChartInst = null;
+
+        // --- 2. Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuthStatus();
+            setupDropZone();
+        });
+
+        // Initialize empty initially, populated by GAS sync
+        function loadInitialData() {
+            const savedData = localStorage.getItem('crm_inventory_data');
+            if (savedData) {
+                inventoryData = JSON.parse(savedData);
+            }
+        }
+
+        function populateCenterDropdowns() {
+            const filterCenter = document.getElementById('filterCenter');
+            const locSelect = document.getElementById('location');
+            
+            if (filterCenter) {
+                filterCenter.innerHTML = '<option value="">All Centers</option>' + 
+                    centersData.filter(c => c.code !== 'admin').map(c => `<option value="${c.code}">${c.code} - ${c.name}</option>`).join('');
+            }
+            if (locSelect) {
+                locSelect.innerHTML = centersData.filter(c => c.code !== 'admin').map(c => `<option value="${c.code}">${c.code} - ${c.name}</option>`).join('');
+            }
+        }
+
+        // --- 3. Authentication & GAS Syncing ---
+        function checkAuthStatus() {
+            const session = sessionStorage.getItem('crm_user_session');
+            if (session) {
+                currentUser = JSON.parse(session);
+                loadInitialData();
+                showApp();
+                // Background sync on reload
+                pullCentersFromGAS();
+                pullFromGAS();
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value.trim();
+            const btn = document.getElementById('loginBtn');
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'login', username: u, password: p })
+                });
+                
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    currentUser = result.data; // e.g. { role: 'admin', code: 'ALL', name: 'Global Admin' }
+                    sessionStorage.setItem('crm_user_session', JSON.stringify(currentUser));
+                    document.getElementById('loginForm').reset();
+                    showApp();
+                    showToast('Access Granted', `Welcome back, ${currentUser.name}`, 'success');
+                    
+                    // Automatically sync data upon successful login
+                    await pullCentersFromGAS();
+                    await pullFromGAS();
+                } else {
+                    showToast('Authentication Failed', result.message, 'error');
+                }
+            } catch (err) {
+                console.error('Login Error:', err);
+                showToast('Connection Error', 'Failed to communicate with GAS Backend.', 'error');
+            } finally {
+                btn.innerHTML = '<span>Secure Access</span> <i class="fas fa-arrow-right"></i>';
+                btn.disabled = false;
+            }
+        }
+
+        async function pullCentersFromGAS() {
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'read_auth' })
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    centersData = result.data.map(c => ({
+                        code: c.Username,
+                        name: c.CenterName,
+                        password: c.Password,
+                        role: c.Role
+                    }));
+                    populateCenterDropdowns();
+                    if (currentUser && currentUser.role === 'admin' && document.getElementById('view-centers').classList.contains('flex')) {
+                        renderCentersTable();
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to sync centers", err);
+            }
+        }
+
+        async function pushCentersToGAS() {
+            const exportAuth = centersData.map(c => ({
+                Username: c.code,
+                Password: c.password,
+                Role: c.role || 'center',
+                CenterName: c.name
+            }));
+            try {
+                await fetch(GAS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'write_auth', data: exportAuth })
+                });
+            } catch (err) {
+                console.error("Failed to push centers", err);
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('crm_user_session');
+            currentUser = null;
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('appContainer').classList.add('hidden');
+        }
+
+        function showApp() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('appContainer').classList.remove('hidden');
+            
+            // Adjust UI for Role
+            document.getElementById('sidebarRoleLabel').innerText = currentUser.role === 'admin' ? 'Super Admin' : 'Center Manager';
+            document.getElementById('currentUserDisplay').innerText = currentUser.role === 'admin' ? 'System Admin' : `Manager - ${currentUser.code}`;
+            document.getElementById('currentLocationDisplay').innerText = currentUser.role === 'admin' ? 'Global Organization' : `${currentUser.code} Center Operations`;
+            
+            const filterCenter = document.getElementById('filterCenter');
+            const navCenters = document.getElementById('nav-centers');
+            if (currentUser.role === 'admin') {
+                filterCenter.classList.remove('hidden');
+                navCenters.classList.remove('hidden');
+                navCenters.classList.add('flex');
+                document.getElementById('location').disabled = false;
+                document.getElementById('dashboardSubtitle').innerText = "Real-time overview of IT asset infrastructure across all locations";
+            } else {
+                filterCenter.classList.add('hidden');
+                navCenters.classList.add('hidden');
+                navCenters.classList.remove('flex');
+                document.getElementById('location').value = currentUser.code;
+                document.getElementById('location').disabled = true; // Lock to their center
+                document.getElementById('dashboardSubtitle').innerText = `Real-time overview of IT assets at ${currentUser.code}`;
+            }
+
+            switchView('dashboard');
+        }
+
+        // --- 4. Navigation ---
+        function switchView(viewId) {
+            // Hide all sections
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            // Show requested
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            
+            // Due to flex layout on inventory and centers, ensure they display flex
+            if (viewId === 'inventory' || viewId === 'centers') document.getElementById(`view-${viewId}`).classList.add('flex');
+            
+            document.getElementById(`nav-${viewId}`).classList.add('active');
+            
+            if (viewId === 'dashboard') renderDashboard();
+            if (viewId === 'inventory') renderTable();
+            if (viewId === 'centers') renderCentersTable();
+            
+            // Close mobile menu if open
+            const menu = document.getElementById('mobileMenu');
+            if(menu && !menu.classList.contains('hidden')) toggleMobileMenu();
+        }
+
+        function toggleMobileMenu() {
+            // Simple logic assuming navigation items are in a mobile container (simplified here)
+            alert("Mobile menu expanded functionality would go here.");
+        }
+
+        // --- 5. Data Access Helpers ---
+        function getFilteredData() {
+            // Secure filter based on role
+            return currentUser.role === 'admin' ? [...inventoryData] : inventoryData.filter(d => d.location === currentUser.code);
+        }
+
+        function saveToLocal() {
+            localStorage.setItem('crm_inventory_data', JSON.stringify(inventoryData));
+        }
+
+        // --- 6. Dashboard Module ---
+        function renderDashboard() {
+            const data = getFilteredData();
+            
+            // Calculate KPIs
+            const total = data.length;
+            const active = data.filter(d => d.status && d.status.toLowerCase() === 'active').length;
+            const faulty = data.filter(d => d.status && (d.status.toLowerCase().includes('faulty') || d.status.toLowerCase().includes('repair'))).length;
+            
+            // Determine Pro vs Non-Pro (crude check based on Model Name strings)
+            const pro = data.filter(d => d.modelName && d.modelName.toLowerCase().includes('pro')).length;
+            const nonPro = total - pro; // Approximate
+            
+            // Update DOM Elements
+            animateValue("kpi-total", 0, total, 1000);
+            animateValue("kpi-active", 0, active, 1000);
+            animateValue("kpi-faulty", 0, faulty, 1000);
+            animateValue("kpi-pro", 0, pro, 1000);
+            animateValue("kpi-nonpro", 0, nonPro, 1000);
+
+            // Chart Colors
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.font.family = 'Inter';
+
+            // 1. Center Chart
+            const ctxCenter = document.getElementById('centerChart').getContext('2d');
+            if (centerChartInst) centerChartInst.destroy();
+            
+            let centerLabels = [], centerData = [];
+            if (currentUser.role === 'admin') {
+                const centerCounts = {};
+                data.forEach(d => { if(d.location) centerCounts[d.location] = (centerCounts[d.location]||0) + 1; });
+                centerLabels = Object.keys(centerCounts);
+                centerData = Object.values(centerCounts);
+            } else {
+                document.getElementById('barChartTitle').innerHTML = '<i class="fas fa-briefcase text-primary"></i> Project Distribution';
+                const projCounts = {};
+                data.forEach(d => { const p = d.projectName||'Unassigned'; projCounts[p] = (projCounts[p]||0) + 1; });
+                centerLabels = Object.keys(projCounts);
+                centerData = Object.values(projCounts);
+            }
+
+            centerChartInst = new Chart(ctxCenter, {
+                type: 'bar',
+                data: {
+                    labels: centerLabels,
+                    datasets: [{
+                        label: 'Devices',
+                        data: centerData,
+                        backgroundColor: '#6366f1',
+                        borderRadius: 6,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#1e293b' } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // 2. Model Donut Chart
+            const ctxModel = document.getElementById('modelChart').getContext('2d');
+            if (modelChartInst) modelChartInst.destroy();
+            
+            // Group Top 5 models
+            const modelCounts = {};
+            data.forEach(d => { if(d.modelName) modelCounts[d.modelName] = (modelCounts[d.modelName]||0) + 1; });
+            const sortedModels = Object.entries(modelCounts).sort((a,b) => b[1]-a[1]);
+            const topLabels = sortedModels.slice(0,5).map(arr => arr[0]);
+            const topData = sortedModels.slice(0,5).map(arr => arr[1]);
+            
+            modelChartInst = new Chart(ctxModel, {
+                type: 'doughnut',
+                data: {
+                    labels: topLabels,
+                    datasets: [{
+                        data: topData,
+                        backgroundColor: ['#6366f1', '#14b8a6', '#f43f5e', '#8b5cf6', '#eab308'],
+                        borderWidth: 0, hoverOffset: 5
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: { legend: { position: 'right' } }
+                }
+            });
+        }
+        
+        // Count animation utility
+        function animateValue(id, start, end, duration) {
+            if (start === end) { document.getElementById(id).innerHTML = end; return; }
+            let range = end - start;
+            let current = start;
+            let increment = end > start ? 1 : -1;
+            let stepTime = Math.abs(Math.floor(duration / range));
+            if(stepTime < 10) stepTime = 10;
+            let obj = document.getElementById(id);
+            let timer = setInterval(function() {
+                current += increment;
+                obj.innerHTML = current;
+                if (current == end) clearInterval(timer);
+            }, stepTime);
+        }
+
+        // --- 7. Inventory CRUD Module ---
+        function renderTable() {
+            let data = getFilteredData();
+            
+            // Search & Filters
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const fStatus = document.getElementById('filterStatus').value;
+            const fCenter = document.getElementById('filterCenter') ? document.getElementById('filterCenter').value : '';
+
+            data = data.filter(d => {
+                const s = search === '' || (d.tagId && d.tagId.toLowerCase().includes(search)) || 
+                                           (d.modelName && d.modelName.toLowerCase().includes(search)) || 
+                                           (d.imei && d.imei.toLowerCase().includes(search));
+                const stat = fStatus === '' || (d.status && d.status === fStatus);
+                const cen = fCenter === '' || (d.location && d.location === fCenter);
+                return s && stat && cen;
+            });
+            
+            // Sorting (Simple numeric by sNo for now)
+            data.sort((a,b) => {
+                let valA = parseInt(a.sNo) || 0;
+                let valB = parseInt(b.sNo) || 0;
+                return currentSort.dir === 'asc' ? valA - valB : valB - valA;
+            });
+
+            const tbody = document.getElementById('inventoryTableBody');
+            tbody.innerHTML = '';
+            
+            if (data.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+                document.getElementById('emptyState').classList.add('flex');
+            } else {
+                document.getElementById('emptyState').classList.add('hidden');
+                document.getElementById('emptyState').classList.remove('flex');
+                
+                data.forEach(d => {
+                    // Status styling logic
+                    const statusLower = (d.status || '').toLowerCase();
+                    let statusClass = 'bg-slate-700 text-slate-300'; // Default
+                    if (statusLower === 'active') statusClass = 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400';
+                    else if (statusLower.includes('faulty')) statusClass = 'bg-rose-500/10 border-rose-500/50 text-rose-400';
+                    else if (statusLower.includes('repair')) statusClass = 'bg-amber-500/10 border-amber-500/50 text-amber-400';
+
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-slate-800/80 transition-colors group cursor-default';
+                    row.innerHTML = `
+                        <td class="py-3 px-5 text-slate-400 font-medium">${d.sNo || '-'}</td>
+                        <td class="py-3 px-5 font-mono text-primary font-bold">${d.tagId || '-'}</td>
+                        <td class="py-3 px-5"><span class="bg-slate-800 text-[10px] px-2 py-1 rounded border border-slate-600 font-bold">${d.location || 'UNKN'}</span></td>
+                        <td class="py-3 px-5 font-semibold text-slate-200">${d.modelName || '-'}</td>
+                        <td class="py-3 px-5 text-slate-400 text-xs font-semibold">${d.projectName || '-'}</td>
+                        <td class="py-3 px-5 font-mono text-xs text-slate-500 group-hover:text-slate-300 transition-colors">${d.imei || '-'}</td>
+                        <td class="py-3 px-5 text-xs text-slate-400">${d.color || '-'}</td>
+                        <td class="py-3 px-5">
+                            <span class="text-[10px] px-2.5 py-1 rounded border font-bold uppercase tracking-wider ${statusClass}">${d.status || 'UNKNOWN'}</span>
+                        </td>
+                        <td class="py-3 px-5 text-right opacity-50 group-hover:opacity-100 transition-opacity">
+                            <button onclick="editDevice(${d.id})" class="w-8 h-8 rounded hover:bg-indigo-500/20 text-slate-400 hover:text-indigo-400 transition-colors"><i class="fas fa-pen"></i></button>
+                            <button onclick="deleteDevice(${d.id})" class="w-8 h-8 rounded hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+            document.getElementById('recordCountDisplay').innerText = `Showing ${data.length} records`;
+        }
+
+        // Sorting toggler
+        function sortTable(col) {
+            currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+            renderTable();
+        }
+
+        function openDeviceModal(id = null) {
+            const form = document.getElementById('deviceForm');
+            form.reset();
+            document.getElementById('deviceId').value = '';
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus-circle text-primary"></i> Add New Asset';
+            
+            // Lock location field if center role
+            if (currentUser.role === 'center') {
+                document.getElementById('location').value = currentUser.code;
+            } else {
+                document.getElementById('location').value = 'RCR'; // Default
+            }
+
+            if (id) {
+                const d = inventoryData.find(x => x.id === id);
+                if (d) {
+                    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit text-primary"></i> Edit Asset';
+                    document.getElementById('deviceId').value = d.id;
+                    document.getElementById('sNo').value = d.sNo || '';
+                    document.getElementById('tagId').value = d.tagId || '';
+                    document.getElementById('location').value = d.location || '';
+                    document.getElementById('projectName').value = d.projectName || '';
+                    document.getElementById('modelName').value = d.modelName || '';
+                    document.getElementById('supplier').value = d.supplier || '';
+                    document.getElementById('imei').value = d.imei || '';
+                    document.getElementById('status').value = d.status || '';
+                    document.getElementById('storage').value = d.storage || '';
+                    document.getElementById('color').value = d.color || '';
+                }
+            } else {
+                // Auto inc sNo
+                let maxSNo = 0;
+                inventoryData.forEach(d => { if(parseInt(d.sNo) > maxSNo) maxSNo = parseInt(d.sNo); });
+                document.getElementById('sNo').value = maxSNo + 1;
+            }
+
+            const modal = document.getElementById('deviceModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => { content.classList.remove('scale-95'); content.classList.add('scale-100'); }, 10);
+        }
+
+        function closeDeviceModal() {
+            const modal = document.getElementById('deviceModal');
+            const content = document.getElementById('modalContent');
+            content.classList.remove('scale-100'); content.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 200);
+        }
+
+        function saveDevice(e) {
+            e.preventDefault();
+            const id = document.getElementById('deviceId').value;
+            
+            const newDevice = {
+                id: id ? parseInt(id) : Date.now(),
+                sNo: document.getElementById('sNo').value,
+                tagId: document.getElementById('tagId').value.trim(),
+                location: document.getElementById('location').value,
+                projectName: document.getElementById('projectName').value.trim(),
+                modelName: document.getElementById('modelName').value.trim(),
+                supplier: document.getElementById('supplier').value.trim(),
+                imei: document.getElementById('imei').value.trim(),
+                status: document.getElementById('status').value,
+                storage: document.getElementById('storage').value.trim(),
+                color: document.getElementById('color').value.trim()
+            };
+
+            if (id) {
+                const idx = inventoryData.findIndex(x => x.id === parseInt(id));
+                if (idx !== -1) inventoryData[idx] = newDevice;
+                showToast('Success', 'Asset record updated.', 'success');
+            } else {
+                inventoryData.push(newDevice);
+                showToast('Success', 'New asset added to inventory.', 'success');
+            }
+
+            saveToLocal();
+            renderTable();
+            closeDeviceModal();
+            pushToGAS(); // Auto-sync to backend
+        }
+
+        function editDevice(id) {
+            const d = inventoryData.find(x => x.id === id);
+            if(currentUser.role !== 'admin' && d.location !== currentUser.code) {
+                showToast('Access Denied', 'You lack permissions to edit records from other centers.', 'error');
+                return;
+            }
+            openDeviceModal(id);
+        }
+
+        function deleteDevice(id) {
+            const d = inventoryData.find(x => x.id === id);
+            if(currentUser.role !== 'admin' && d.location !== currentUser.code) {
+                showToast('Access Denied', 'Cannot delete records outside your jurisdiction.', 'error');
+                return;
+            }
+            if (confirm(`CRITICAL: Confirm deletion of asset ${d.tagId}?`)) {
+                inventoryData = inventoryData.filter(x => x.id !== id);
+                saveToLocal();
+                renderTable();
+                showToast('Deleted', 'Asset successfully removed from database.', 'info');
+                pushToGAS(); // Auto-sync to backend
+            }
+        }
+
+        // --- 7.5 Centers CRUD Module ---
+        function renderCentersTable() {
+            const tbody = document.getElementById('centersTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            centersData.forEach((c) => {
+                if (c.code.toLowerCase() === 'admin') return; // Hide admin account from table
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-slate-800/80 transition-colors group cursor-default';
+                row.innerHTML = `
+                    <td class="py-3 px-5 font-mono text-secondary font-bold">${c.code}</td>
+                    <td class="py-3 px-5 font-semibold text-slate-200">${c.name}</td>
+                    <td class="py-3 px-5 text-slate-400 font-mono text-xs"><span class="blur-sm hover:blur-none transition-all cursor-pointer select-all">${c.password}</span></td>
+                    <td class="py-3 px-5 text-right opacity-50 group-hover:opacity-100 transition-opacity">
+                        <button onclick="editCenter('${c.code}')" class="w-8 h-8 rounded hover:bg-teal-500/20 text-slate-400 hover:text-teal-400 transition-colors"><i class="fas fa-pen"></i></button>
+                        <button onclick="deleteCenter('${c.code}')" class="w-8 h-8 rounded hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"><i class="fas fa-trash-alt"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function openCenterModal(code = null) {
+            const form = document.getElementById('centerForm');
+            form.reset();
+            document.getElementById('editCenterId').value = '';
+            document.getElementById('centerCode').disabled = false;
+            document.getElementById('centerModalTitle').innerHTML = '<i class="fas fa-building text-secondary"></i> Add New Center';
+            
+            if (code) {
+                const c = centersData.find(x => x.code === code);
+                if (c) {
+                    document.getElementById('centerModalTitle').innerHTML = '<i class="fas fa-edit text-secondary"></i> Edit Center';
+                    document.getElementById('editCenterId').value = c.code;
+                    document.getElementById('centerCode').value = c.code;
+                    document.getElementById('centerCode').disabled = true; // Prevent changing unique code
+                    document.getElementById('centerName').value = c.name;
+                    document.getElementById('centerPassword').value = c.password;
+                }
+            }
+
+            const modal = document.getElementById('centerModal');
+            const content = document.getElementById('centerModalContent');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => { content.classList.remove('scale-95'); content.classList.add('scale-100'); }, 10);
+        }
+
+        function closeCenterModal() {
+            const modal = document.getElementById('centerModal');
+            const content = document.getElementById('centerModalContent');
+            content.classList.remove('scale-100'); content.classList.add('scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 200);
+        }
+
+        function saveCenter(e) {
+            e.preventDefault();
+            const editCode = document.getElementById('editCenterId').value;
+            const code = document.getElementById('centerCode').value.trim().toUpperCase();
+            const name = document.getElementById('centerName').value.trim();
+            const password = document.getElementById('centerPassword').value.trim();
+
+            if (editCode) {
+                const idx = centersData.findIndex(x => x.code === editCode);
+                if (idx !== -1) {
+                    centersData[idx].name = name;
+                    centersData[idx].password = password;
+                }
+                showToast('Success', 'Center updated successfully.', 'success');
+            } else {
+                // Check if code exists
+                if (centersData.some(x => x.code === code)) {
+                    showToast('Error', 'Center Code already exists!', 'error');
+                    return;
+                }
+                centersData.push({ code, name, password, role: 'center' });
+                showToast('Success', 'New center added successfully.', 'success');
+            }
+
+            populateCenterDropdowns();
+            renderCentersTable();
+            closeCenterModal();
+            pushCentersToGAS(); // Auto sync
+        }
+
+        function editCenter(code) {
+            openCenterModal(code);
+        }
+
+        function deleteCenter(code) {
+            if (confirm(`CRITICAL: Remove access and center profile for ${code}? Devices mapped to this center will remain in the database.`)) {
+                centersData = centersData.filter(x => x.code !== code);
+                populateCenterDropdowns();
+                renderCentersTable();
+                showToast('Deleted', 'Center successfully removed.', 'info');
+                pushCentersToGAS(); // Auto sync
+            }
+        }
+
+        // --- 8. Integration Hub (Excel & Google Apps Script) ---
+        
+        // 8A. Google Apps Script Logic
+        function logSync(msg) {
+            const consoleEl = document.getElementById('syncConsole');
+            const time = new Date().toLocaleTimeString();
+            consoleEl.innerHTML += `<br><span class="text-slate-500">[${time}]</span> ${msg}`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        async function pullFromGAS() {
+            logSync('Initiating POST request to Apps Script backend (fetch action)...');
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'read' })
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success' && Array.isArray(result.data)) {
+                    inventoryData = result.data.map((row, idx) => ({
+                        id: Date.now() + idx,
+                        sNo: row['S No'] || row['sNo'] || idx + 1,
+                        tagId: row['Tag ID'] || row['tagId'] || '',
+                        location: row['Location'] || row['location'] || 'RCR',
+                        projectName: row['Project Name'] || row['projectName'] || '',
+                        modelName: row['Model Name'] || row['modelName'] || '',
+                        supplier: row['Supplier'] || '',
+                        imei: row['IMEI 1'] || row['IMEI'] || row['imei'] || '',
+                        status: row['Device Status'] || row['Status'] || row['status'] || 'Active',
+                        storage: row['Storage'] || '',
+                        color: row['Mobile Color'] || row['color'] || ''
+                    }));
+                    saveToLocal();
+                    if (document.getElementById('view-inventory').classList.contains('flex')) {
+                        renderTable();
+                    }
+                    if (document.getElementById('view-dashboard').classList.contains('block') || !document.getElementById('view-dashboard').classList.contains('hidden')) {
+                        renderDashboard();
+                    }
+                    logSync(`Pull complete. Mapped ${inventoryData.length} records.`);
+                    showToast('Sync Complete', 'Data successfully pulled from Google Sheets.', 'success');
+                } else {
+                    throw new Error('Data payload invalid or empty.');
+                }
+            } catch (err) {
+                logSync(`HTTP Error: ${err.message}`);
+                showToast('Sync Failed', 'Could not fetch data. Check console logs.', 'error');
+            }
+        }
+
+        async function pushToGAS() {
+            logSync('Formatting dataset for payload transmission...');
+            const exportData = inventoryData.map(d => ({
+                'S No': d.sNo, 'Tag ID': d.tagId, 'Location': d.location, 
+                'Project Name': d.projectName, 'Model Name': d.modelName, 
+                'Supplier': d.supplier, 'IMEI 1': d.imei, 'Storage': d.storage, 
+                'Mobile Color': d.color, 'Device Status': d.status
+            }));
+
+            try {
+                logSync('Transmitting JSON data to GAS...');
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'write', data: exportData })
+                });
+                
+                const result = await response.json();
+                if (result.status === 'success') {
+                    logSync('Google Sheet reflects changes successfully.');
+                    showToast('Cloud Sync Complete', 'Data safely stored in Google servers.', 'success');
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (err) {
+                logSync(`Transmission Error: ${err.message}`);
+                showToast('Sync Failed', 'Failed to push data.', 'error');
+            }
+        }
+
+        // 8B. SheetJS (Excel) Logic
+        function setupDropZone() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+
+            dropZone.addEventListener('click', () => fileInput.click());
+            
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+            ['dragleave', 'dragend'].forEach(type => {
+                dropZone.addEventListener(type, () => dropZone.classList.remove('dragover'));
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+            });
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length) handleFile(e.target.files[0]);
+            });
+        }
+
+        function handleFile(file) {
+            if (!file.name.includes('.xls') && !file.name.includes('.csv')) {
+                showToast('File Error', 'Please upload a valid Excel or CSV file.', 'error');
+                return;
+            }
+            logSync(`Reading uploaded file: ${file.name}...`);
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // Try to find the Master Data sheet, or just use the first one
+                    let sheetName = workbook.SheetNames.includes('Master_Inventory_Data') ? 'Master_Inventory_Data' : workbook.SheetNames[0];
+                    logSync(`Parsing sheet: ${sheetName}...`);
+                    
+                    const worksheet = workbook.Sheets[sheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    if(json.length > 0) {
+                        // Map the raw excel columns to our internal structure
+                        inventoryData = json.map((row, idx) => ({
+                            id: Date.now() + idx,
+                            sNo: row['S No'] || idx + 1,
+                            tagId: row['Tag ID'] || '',
+                            location: row['Location'] || 'UNKNOWN',
+                            projectName: row['Project Name'] || '',
+                            modelName: row['Model Name'] || '',
+                            supplier: row['Supplier'] || '',
+                            imei: row['IMEI 1'] || row['Serial No'] || row['IMEI'] || '',
+                            status: row['Device Status'] || 'Active',
+                            storage: row['Storage'] || '',
+                            color: row['Mobile Color'] || ''
+                        })).filter(d => d.tagId !== ''); // Filter out completely empty rows
+
+                        saveToLocal();
+                        logSync(`Import successful. Loaded ${inventoryData.length} records.`);
+                        showToast('Import Complete', `Successfully loaded ${inventoryData.length} devices from Excel.`, 'success');
+                    } else {
+                        logSync('Sheet appears to be empty.');
+                        showToast('Warning', 'The uploaded sheet contained no data.', 'error');
+                    }
+                } catch (error) {
+                    logSync(`Excel parsing error: ${error.message}`);
+                    showToast('Import Failed', 'Failed to read the Excel file.', 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function exportToExcel() {
+            logSync('Preparing Excel workbook generation...');
+            
+            // Format data for sheet
+            const exportArr = inventoryData.map(d => ({
+                'S No': d.sNo,
+                'Tag ID': d.tagId,
+                'Project Name': d.projectName,
+                'Model Name': d.modelName,
+                'Supplier': d.supplier,
+                'Location': d.location,
+                'IMEI 1': d.imei,
+                'Storage': d.storage,
+                'Mobile Color': d.color,
+                'Device Status': d.status
+            }));
+
+            // Create Workbook
+            const worksheet = XLSX.utils.json_to_sheet(exportArr);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Master_Inventory_Data");
+            
+            // Download
+            XLSX.writeFile(workbook, `T_and_M_Inventory_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
+            logSync('Excel file downloaded to client.');
+            showToast('Export Complete', 'File downloaded successfully.', 'success');
+        }
+
+        // --- UI Utilities ---
+        function showToast(title, msg, type = 'info') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastTitle').innerText = title;
+            document.getElementById('toastMsg').innerText = msg;
+            
+            const icon = document.getElementById('toastIcon');
+            toast.className = 'fixed top-5 right-5 z-[100] transform transition-transform duration-300 px-5 py-4 rounded-xl shadow-2xl flex items-center gap-4 min-w-[300px] border-l-4';
+            
+            if (type === 'success') {
+                toast.classList.add('bg-slate-800', 'border-emerald-500', 'text-white');
+                icon.className = 'fas fa-check-circle text-emerald-400 text-2xl';
+            } else if (type === 'error') {
+                toast.classList.add('bg-slate-800', 'border-rose-500', 'text-white');
+                icon.className = 'fas fa-exclamation-triangle text-rose-400 text-2xl';
+            } else {
+                toast.classList.add('bg-slate-800', 'border-primary', 'text-white');
+                icon.className = 'fas fa-info-circle text-primary text-2xl';
+            }
+
+            toast.classList.remove('translate-x-full');
+            setTimeout(() => toast.classList.add('translate-x-full'), 3500);
+        }
+    </script>
+</body>
+</html>
